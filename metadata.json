@@ -1,0 +1,6 @@
+{
+  "name": "Inventix",
+  "description": "AI-powered Procurement and Inventory Management Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

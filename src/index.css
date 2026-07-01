@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Base custom styles for premium enterprise aesthetic */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-[#030712] text-slate-100 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200 overflow-x-hidden;
+  }
+  
+/* Custom scrollbar to match enterprise dark style */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #030712;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+/* Premium micro-interactions and animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+}
+
+.bg-radial-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+}
+
+/* Custom glow effects for premium dark theme */
+.glow-subtle {
+  box-shadow: 0 0 60px -15px rgba(99, 102, 241, 0.2);
+}
+
+.glow-card {
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.03), 0 10px 40px -10px rgba(0, 0, 0, 0.8);
+}
+
+/* Premium enterprise hover transitions and shadows */
+.sidebar-item-transition {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-item-hover:hover:not(.active-sidebar-item) {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px 1px rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.card-hover-effect {
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-3px);
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.75), 0 0 20px 0 rgba(99, 102, 241, 0.04);
+}
+
+.button-hover-scale {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button-hover-scale:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 0 15px 0 rgba(99, 102, 241, 0.2);
+}
+
+.table-row-hover {
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.table-row-hover:hover {
+  background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+.sticky-table-header th {
+  position: sticky;
+  top: 0;
+  background-color: #040815 !important;
+  z-index: 10;
+  box-shadow: inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.badge-glow {
+  transition: all 0.2s ease;
+}
+
+.badge-glow:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 8px currentColor;
+}
+
+
