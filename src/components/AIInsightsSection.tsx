@@ -216,6 +216,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                 <motion.circle 
                   cx="150" 
                   cy="80" 
+                  initial={{ r: 3 }}
                   animate={{ r: hoveredForecastPoint ? 6 : 3 }}
                   fill="#fbbf24" 
                   className="pointer-events-none"

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { 
-  Search, Filter, Plus, ChevronDown, MoreVertical, Edit2, Trash2, 
-  RefreshCw, ChevronLeft, ChevronRight, Check, CheckCircle2, Box
+import { Search, Filter, Plus, ChevronDown, MoreVertical, Edit2, Trash2, 
+  RefreshCw, ChevronLeft, ChevronRight, Check, CheckCircle2, Box, AlertCircle
 } from "lucide-react";
-import { ProductItem, initialProducts } from "../data/dashboardData";
+import { ProductItem } from "../data/dashboardData";
 import { HighlightText, SortIndicator, EmptyState } from "./TableUX";
+import SkeletonLoader from "./SkeletonLoader";
+import { useProducts } from "../hooks/useProducts";
 
 interface ProductsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
@@ -12,7 +13,7 @@ interface ProductsSectionProps {
 }
 
 export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSectionProps) {
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+  const { products, setProducts, loading, error, refreshProducts } = useProducts();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -150,15 +151,33 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
               setSelectedCategory("All");
               setSelectedStatus("All");
               setCurrentPage(1);
-              onShowToast("Filters reset successfully.", "info");
+              refreshProducts();
+              onShowToast("Filters reset and data refreshed.", "info");
             }}
-            className="p-1.5 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs"
-            title="Reset Filters"
+            className="p-1.5 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            title="Reset Filters & Refresh"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">Data Fetch Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshProducts} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Enterprise Products Table */}
       <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
@@ -183,7 +202,21 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
               </tr>
             </thead>
             <tbody>
-              {paginatedProducts.length > 0 ? (
+              {loading ? (
+                // Loading Skeleton Rows
+                Array.from({ length: itemsPerPage }).map((_, i) => (
+                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                    <td className="py-4 px-4"><SkeletonLoader className="h-8 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded ml-auto" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded mx-auto" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-28 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                  </tr>
+                ))
+              ) : paginatedProducts.length > 0 ? (
                 paginatedProducts.map((p) => (
                   <tr 
                     key={p.id}

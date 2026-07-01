@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Cpu, Mail, Lock, ArrowRight, AlertCircle, Shield, CheckCircle, RefreshCw } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -34,14 +37,16 @@ export default function LoginPage() {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setLoading(true);
     setTerminalLogs([]);
+    setErrors({});
 
-    // Simulate workspace database sync
+    // Terminal log animation — runs in parallel while the Supabase call is in flight.
+    // The logs are purely cosmetic UI and do not represent actual auth steps.
     const logs = [
       "Connecting to enterprise server...",
       "Loading product database...",
@@ -53,17 +58,35 @@ export default function LoginPage() {
     logs.forEach((log, index) => {
       setTimeout(() => {
         setTerminalLogs((prev) => [...prev, `[SYSTEM] ${log}`]);
-        if (index === logs.length - 1) {
-          setTimeout(() => {
-            setLoading(false);
-            setSuccess(true);
-            setTimeout(() => {
-              navigate("/dashboard");
-            }, 1000);
-          }, 600);
-        }
       }, (index + 1) * 350);
     });
+
+    // Real Supabase authentication call.
+    // signIn() returns null on success or an AuthError on failure.
+    const authError = await signIn(email, password);
+
+    if (authError) {
+      // Authentication failed — exit loading state and surface the error.
+      // Map Supabase error messages to user-friendly copy.
+      setLoading(false);
+      setTerminalLogs([]);
+      const message =
+        authError.message === "Invalid login credentials"
+          ? "Invalid email or password. Please check your credentials and try again."
+          : authError.message;
+      setErrors({ general: message });
+      return;
+    }
+
+    // Authentication succeeded — show success card, then navigate.
+    // A short delay lets the final terminal log render before transitioning.
+    setTimeout(() => {
+      setLoading(false);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1000);
+    }, logs.length * 350 + 200);
   };
 
   return (
@@ -181,6 +204,14 @@ export default function LoginPage() {
           ) : (
             /* Standard Interactive Login Form */
             <form onSubmit={handleLogin} className="space-y-6">
+
+              {/* General auth error (wrong credentials, network issues, etc.) */}
+              {errors.general && (
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/5 text-xs text-rose-400 animate-slideIn">
+                  <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span className="leading-relaxed">{errors.general}</span>
+                </div>
+              )}
               
               {/* Business Email */}
               <div className="space-y-2">

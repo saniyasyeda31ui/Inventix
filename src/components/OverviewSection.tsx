@@ -291,6 +291,7 @@ export default function OverviewSection({
                   <motion.circle
                     cx={pt.cx}
                     cy={pt.cy}
+                    initial={{ r: 3, strokeWidth: 2, fill: "#030712" }}
                     animate={{
                       r: hoveredPoint === idx ? 6 : 3,
                       strokeWidth: hoveredPoint === idx ? 3 : 2,
