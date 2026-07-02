@@ -35,6 +35,7 @@ import CompanySection from "../components/CompanySection";
 import EmployeesSection from "../components/EmployeesSection";
 import PaymentsSection from "../components/PaymentsSection";
 import SettingsSection from "../components/SettingsSection";
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -59,12 +60,16 @@ export default function DashboardPage() {
   // Global Search Query
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
 
-  // Custom Notifications list
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "Price Reduction Alert", desc: "SteelWorks offers 8% lower price on Copper Tubing", read: false, time: "5m ago" },
-    { id: 2, title: "Stock Buffer Cleared", desc: "Rotterdam shipment received successfully", read: false, time: "1h ago" },
-    { id: 3, title: "Audit Completed", desc: "Stock accuracy audited at 99.9% for June", read: true, time: "Yesterday" }
-  ]);
+  // Live Notifications from Supabase
+  const {
+    notifications,
+    loading: notiLoading,
+    error: notiError,
+    unreadCount,
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [notiFilter, setNotiFilter] = useState<"all" | "unread">("all");
 
@@ -248,10 +253,7 @@ export default function DashboardPage() {
     showToast(`Workspace backdrop toggled to ${newTheme === "slate" ? "Slate Midnight" : "Charcoal Black"}.`, "info");
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-    showToast("All notifications marked as read.", "success");
-  };
+  // markAllAsRead is now provided by useNotifications hook
 
   // Render Section dynamically based on active tab
   const renderActiveSection = () => {
@@ -448,13 +450,37 @@ export default function DashboardPage() {
                       notiFilter === "unread" ? "bg-indigo-600/10 text-indigo-400 border border-indigo-500/10 font-bold" : "text-slate-500 hover:text-slate-300"
                     }`}
                   >
-                    Unread ({notifications.filter(n => !n.read).length})
+                    Unread ({unreadCount})
                   </button>
                 </div>
 
                 {/* Alerts List */}
                 <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
-                  {notifications.filter(n => notiFilter === "all" || !n.read).length > 0 ? (
+                  {notiLoading ? (
+                    // Loading skeletons
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <div key={`noti-skeleton-${i}`} className="p-3 rounded-xl border border-slate-900/60 space-y-2 animate-pulse">
+                        <div className="flex items-center justify-between">
+                          <div className="h-3 w-32 rounded bg-slate-800" />
+                          <div className="h-2.5 w-10 rounded bg-slate-800" />
+                        </div>
+                        <div className="h-2.5 w-full rounded bg-slate-800" />
+                        <div className="h-2.5 w-3/4 rounded bg-slate-800" />
+                      </div>
+                    ))
+                  ) : notiError ? (
+                    // Error state
+                    <div className="py-8 text-center space-y-2">
+                      <p className="text-xs text-rose-400 font-semibold">Failed to load notifications</p>
+                      <p className="text-[10px] text-slate-500">{notiError}</p>
+                      <button
+                        onClick={refreshNotifications}
+                        className="text-[10px] font-mono font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : notifications.filter(n => notiFilter === "all" || !n.read).length > 0 ? (
                     notifications.filter(n => notiFilter === "all" || !n.read).map(n => (
                       <div 
                         key={n.id} 
@@ -466,14 +492,14 @@ export default function DashboardPage() {
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-slate-200">{n.title}</span>
-                          <span className="text-[9px] font-mono text-slate-500">{n.time}</span>
+                          <span className="text-[9px] font-mono text-slate-500">{n.time_label}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">{n.desc}</p>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">{n.description}</p>
                         
                         {!n.read && (
                           <button
                             onClick={() => {
-                              setNotifications(notifications.map(item => item.id === n.id ? { ...item, read: true } : item));
+                              markAsRead(n.id);
                               showToast(`Marked "${n.title}" as read`, "success");
                             }}
                             className="text-[9px] font-mono font-bold text-indigo-400 hover:text-indigo-300 mt-2 block cursor-pointer"
@@ -493,7 +519,10 @@ export default function DashboardPage() {
 
               <div className="pt-4 border-t border-slate-900/60 flex items-center justify-between gap-4">
                 <button
-                  onClick={markAllNotificationsAsRead}
+                  onClick={async () => {
+                    await markAllAsRead();
+                    showToast("All notifications marked as read.", "success");
+                  }}
                   className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
                 >
                   Mark all read
@@ -565,12 +594,13 @@ export default function DashboardPage() {
             onClick={() => {
               setShowNotifications(true);
               setNotiFilter("all");
+              refreshNotifications();
             }}
             className="p-2 rounded-xl border border-slate-900 bg-slate-950/40 hover:bg-slate-900/60 transition-colors text-slate-400 hover:text-white relative cursor-pointer"
             title="Sourcing Alerts Feed"
           >
             <Bell className="w-4 h-4" />
-            {notifications.some(n => !n.read) && (
+            {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
             )}
           </button>
