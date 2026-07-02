@@ -91,7 +91,7 @@ export interface PaymentItem {
 }
 
 export interface AIRecommendation {
-  id: number;
+  id: string | number;
   item: string;
   alert: string;
   reorderQty: number;
@@ -261,49 +261,6 @@ export const initialPayments: PaymentItem[] = [
   { id: "PAY-1003", invoiceId: "INV-2026-911", vendorName: "Global Plastics Corp", amount: "$18,500.00", dueDate: "2026-07-15", status: "Pending", method: "ACH Transfer" },
   { id: "PAY-1004", invoiceId: "INV-2026-918", vendorName: "Valves & Fittings Inc", amount: "$8,400.00", dueDate: "2026-07-25", status: "Pending", method: "Credit Card" },
   { id: "PAY-1005", invoiceId: "INV-2026-844", vendorName: "Belgrave Chemicals", amount: "$12,300.00", dueDate: "2026-06-20", status: "Overdue", method: "ACH Transfer" }
-];
-
-export const aiRecommendations: AIRecommendation[] = [
-  {
-    id: 1,
-    item: "Copper Tubing (Grade-X)",
-    alert: "Copper Tubes will reach low stock in 5 days based on recent demand acceleration.",
-    reorderQty: 250,
-    alternativeSupplier: "SteelWorks Ltd",
-    priceReduction: "8% lower pricing than current supplier",
-    estimatedSavings: "₹48,500/mo",
-    severity: "high"
-  },
-  {
-    id: 2,
-    item: "Silicon-Wafers (Tier-1 Enterprise)",
-    alert: "Lead time from current supplier has risen from 14 to 22 days. Reorder point adjusted.",
-    reorderQty: 500,
-    alternativeSupplier: "Pacific Foundry",
-    priceReduction: "Equivalent pricing, 10-day guaranteed delivery",
-    estimatedSavings: "Eliminates stockout risk",
-    severity: "medium"
-  },
-  {
-    id: 3,
-    item: "Lithium-Ion Cylinders (Type B)",
-    alert: "Bulk order opportunity detected for secondary energy cells.",
-    reorderQty: 1000,
-    alternativeSupplier: "Belgrave Chemicals",
-    priceReduction: "12% volume discount available for next 48 hrs",
-    estimatedSavings: "₹1,24,000 total",
-    severity: "low"
-  },
-  {
-    id: 4,
-    item: "Nylon Insulator Spacers",
-    alert: "Demand is dropping by 15% due to alternative alloy design changes.",
-    reorderQty: 100,
-    alternativeSupplier: "Global Plastics Corp",
-    priceReduction: "5% loyalty adjustment",
-    estimatedSavings: "₹18,000 total",
-    severity: "low"
-  }
 ];
 
 export const vendorPerformance = [

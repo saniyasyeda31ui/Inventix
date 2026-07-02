@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { 
   FileText, Search, Filter, Plus, Printer, Mail, MoreVertical, 
-  Trash2, RefreshCw, Eye, Send, CheckCircle2
+  Trash2, RefreshCw, Eye, Send, CheckCircle2, AlertCircle
 } from "lucide-react";
-import { PurchaseOrder, initialPurchaseOrders } from "../data/dashboardData";
+import { PurchaseOrder } from "../data/dashboardData";
+import SkeletonLoader from "./SkeletonLoader";
+import { usePurchaseOrders } from "../hooks/usePurchaseOrders";
 
 interface PurchaseOrdersSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
@@ -11,7 +13,7 @@ interface PurchaseOrdersSectionProps {
 }
 
 export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: PurchaseOrdersSectionProps) {
-  const [orders, setOrders] = useState<PurchaseOrder[]>(initialPurchaseOrders);
+  const { purchaseOrders: orders, setPurchaseOrders: setOrders, loading, error, refreshPurchaseOrders } = usePurchaseOrders();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -87,8 +89,38 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
             <option value="Sent">Sent (Awaiting Delivery)</option>
             <option value="Completed">Completed</option>
           </select>
+          
+          <button 
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("All");
+              refreshPurchaseOrders();
+              onShowToast("Filters reset and orders refreshed.", "info");
+            }}
+            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            title="Reset Filters & Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">Data Fetch Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshPurchaseOrders} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Orders Table */}
       <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
@@ -108,7 +140,22 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.length > 0 ? (
+              {loading ? (
+                // Loading Skeleton Rows
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-12 rounded ml-auto" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded ml-auto" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                  </tr>
+                ))
+              ) : filteredOrders.length > 0 ? (
                 filteredOrders.map((o) => (
                   <tr 
                     key={o.id}

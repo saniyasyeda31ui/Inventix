@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { 
   Warehouse, Search, Filter, Plus, Mail, User, MapPin, 
-  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders
+  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders, RefreshCw, AlertCircle
 } from "lucide-react";
-import { WarehouseItem, initialWarehouses } from "../data/dashboardData";
+import { WarehouseItem } from "../data/dashboardData";
+import { useWarehouses } from "../hooks/useWarehouses";
 
 interface WarehousesSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
@@ -11,7 +12,7 @@ interface WarehousesSectionProps {
 }
 
 export default function WarehousesSection({ onShowToast, onOpenModal }: WarehousesSectionProps) {
-  const [warehouses, setWarehouses] = useState<WarehouseItem[]>(initialWarehouses);
+  const { warehouses, setWarehouses, loading, error, refreshWarehouses } = useWarehouses();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -85,12 +86,66 @@ export default function WarehousesSection({ onShowToast, onOpenModal }: Warehous
             <option value="At Capacity">At Capacity</option>
             <option value="Maintenance">Maintenance</option>
           </select>
+
+          <button 
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("All");
+              refreshWarehouses();
+              onShowToast("Filters reset and data refreshed.", "info");
+            }}
+            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            title="Reset Filters & Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">Data Fetch Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshWarehouses} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Warehouses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filteredWarehouses.length > 0 ? (
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={`skeleton-${i}`} className="p-5 rounded-2xl border border-slate-900 bg-[#040815] hover:bg-slate-950/20 space-y-4 animate-pulse relative h-[240px] flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <div className="h-3 w-16 bg-slate-800 rounded" />
+                  <div className="h-4 w-32 bg-slate-800 rounded" />
+                </div>
+                <div className="h-6 w-6 bg-slate-800 rounded" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <div className="h-3 w-32 bg-slate-800 rounded" />
+                  <div className="h-3 w-8 bg-slate-800 rounded" />
+                </div>
+                <div className="h-2 w-full bg-slate-800 rounded-full" />
+              </div>
+              <div className="pt-3 border-t border-slate-900/60 space-y-2.5">
+                <div className="h-3 w-40 bg-slate-800 rounded" />
+                <div className="h-3 w-32 bg-slate-800 rounded" />
+                <div className="h-3 w-48 bg-slate-800 rounded" />
+              </div>
+            </div>
+          ))
+        ) : filteredWarehouses.length > 0 ? (
           filteredWarehouses.map((wh) => (
             <div 
               key={wh.id}

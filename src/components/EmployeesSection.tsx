@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { 
   Users, Search, Filter, Plus, ShieldAlert, Key, Trash2, 
-  MoreVertical, Check, RefreshCw
+  MoreVertical, Check, RefreshCw, AlertCircle
 } from "lucide-react";
-import { EmployeeItem, initialEmployees } from "../data/dashboardData";
+import { EmployeeItem } from "../data/dashboardData";
+import SkeletonLoader from "./SkeletonLoader";
+import { useEmployees } from "../hooks/useEmployees";
 
 interface EmployeesSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
@@ -11,7 +13,7 @@ interface EmployeesSectionProps {
 }
 
 export default function EmployeesSection({ onShowToast, onOpenModal }: EmployeesSectionProps) {
-  const [employees, setEmployees] = useState<EmployeeItem[]>(initialEmployees);
+  const { employees, setEmployees, loading, error, refreshEmployees } = useEmployees();
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -85,8 +87,38 @@ export default function EmployeesSection({ onShowToast, onOpenModal }: Employees
           >
             {depts.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
+          
+          <button 
+            onClick={() => {
+              setSearch("");
+              setDeptFilter("All");
+              refreshEmployees();
+              onShowToast("Filters reset and employees refreshed.", "info");
+            }}
+            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            title="Reset Filters & Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">Data Fetch Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshEmployees} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Employees Table */}
       <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
@@ -103,7 +135,24 @@ export default function EmployeesSection({ onShowToast, onOpenModal }: Employees
               </tr>
             </thead>
             <tbody>
-              {filteredEmployees.length > 0 ? (
+              {loading ? (
+                // Loading Skeleton Rows
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
+                    <td className="py-4 px-4">
+                      <div className="space-y-1.5">
+                        <SkeletonLoader className="h-4 w-32 rounded" />
+                        <SkeletonLoader className="h-3 w-40 rounded" />
+                      </div>
+                    </td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-28 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                  </tr>
+                ))
+              ) : filteredEmployees.length > 0 ? (
                 filteredEmployees.map((e) => (
                   <tr 
                     key={e.id}

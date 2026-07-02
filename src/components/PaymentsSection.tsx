@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { 
   CreditCard, Search, Filter, RefreshCw, ChevronLeft, ChevronRight, 
-  MoreVertical, Check, ArrowUpRight, ShieldCheck, MailWarning
+  MoreVertical, Check, ArrowUpRight, ShieldCheck, MailWarning, AlertCircle
 } from "lucide-react";
-import { PaymentItem, initialPayments } from "../data/dashboardData";
+import { PaymentItem } from "../data/dashboardData";
+import SkeletonLoader from "./SkeletonLoader";
+import { usePayments } from "../hooks/usePayments";
 
 interface PaymentsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
 }
 
 export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
-  const [payments, setPayments] = useState<PaymentItem[]>(initialPayments);
+  const { payments, setPayments, loading, error, refreshPayments } = usePayments();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,8 +86,38 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
             <option value="Pending">Pending Authorized</option>
             <option value="Overdue">Overdue</option>
           </select>
+          
+          <button 
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("All");
+              refreshPayments();
+              onShowToast("Filters reset and payments refreshed.", "info");
+            }}
+            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            title="Reset Filters & Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">Data Fetch Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshPayments} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Payments Table */}
       <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
@@ -104,7 +136,21 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
               </tr>
             </thead>
             <tbody>
-              {paginatedPayments.length > 0 ? (
+              {loading ? (
+                // Loading Skeleton Rows
+                Array.from({ length: itemsPerPage }).map((_, i) => (
+                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded ml-auto" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
+                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                  </tr>
+                ))
+              ) : paginatedPayments.length > 0 ? (
                 paginatedPayments.map((p) => (
                   <tr 
                     key={p.id}

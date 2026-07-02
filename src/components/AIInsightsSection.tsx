@@ -4,30 +4,36 @@ import {
   Sparkles, AlertTriangle, TrendingUp, DollarSign, RefreshCw, 
   ChevronRight, ArrowRight, CheckCircle2, ShieldCheck, Zap, Factory
 } from "lucide-react";
-import { aiRecommendations, AIRecommendation } from "../data/dashboardData";
+import { AIRecommendation } from "../data/dashboardData";
+import { useAIRecommendations } from "../hooks/useAIRecommendations";
 
 interface AIInsightsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info" | "warning" | "error") => void;
 }
 
 export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProps) {
-  const [recs, setRecs] = useState<AIRecommendation[]>(aiRecommendations);
+  const { recommendations: recs, loading, error, refreshRecommendations, executeRecommendation } = useAIRecommendations();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hoveredForecastPoint, setHoveredForecastPoint] = useState<boolean>(false);
+  const [hoveredForecastPoint, setHoveredForecastPoint] = useState(false);
 
-  const handleRefreshAI = () => {
+  const handleRefreshAI = async () => {
     setIsRefreshing(true);
     onShowToast("Re-evaluating inventory trends, lead-times, and global commodity pricing...", "info");
-    setTimeout(() => {
-      setIsRefreshing(false);
-      onShowToast("AI Sourcing recommendations updated successfully.", "success");
-    }, 1200);
+    await refreshRecommendations();
+    setIsRefreshing(false);
+    onShowToast("AI Sourcing recommendations updated successfully.", "success");
   };
 
-  const handleApplySourcing = (rec: AIRecommendation) => {
-    onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.item} from ${rec.alternativeSupplier}. Estimated monthly savings: ${rec.estimatedSavings}!`, "success");
-    setRecs(recs.filter(r => r.id !== rec.id));
+  const handleApplySourcing = async (rec: AIRecommendation) => {
+    try {
+      await executeRecommendation(rec.id);
+      onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.item} from ${rec.alternativeSupplier}.`, "success");
+    } catch (err: any) {
+      onShowToast(err.message || "Failed to apply strategy.", "error");
+    }
   };
+
+  console.log('[AIInsightsSection] Rendering recs:', recs, 'loading:', loading);
 
   return (
     <motion.div 
@@ -80,6 +86,23 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
 
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
+          <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-rose-300">AI Engine Connectivity Error</span>
+            <span className="leading-relaxed mt-1 text-xs">{error}</span>
+            <button 
+              onClick={refreshRecommendations} 
+              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Grid: Recommendations + Demand Curves */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
@@ -90,7 +113,23 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
           </h2>
 
           <div className="space-y-4">
-            {recs.length > 0 ? (
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="p-5 rounded-2xl border bg-[#040815] border-slate-900/40 space-y-4 animate-pulse">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-slate-800" />
+                    <div className="h-5 w-48 rounded bg-slate-800" />
+                  </div>
+                  <div className="h-4 w-full rounded bg-slate-800" />
+                  <div className="h-4 w-3/4 rounded bg-slate-800" />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div className="h-12 w-full rounded-xl bg-slate-800" />
+                    <div className="h-12 w-full rounded-xl bg-slate-800" />
+                    <div className="h-12 w-full rounded-xl bg-slate-800" />
+                  </div>
+                </div>
+              ))
+            ) : recs.length > 0 ? (
               recs.map((r) => (
                 <div 
                   key={r.id}
@@ -102,58 +141,64 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                         : "border-indigo-500/10 hover:border-indigo-500/20"
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-bold uppercase badge-glow ${
-                          r.severity === "high" 
-                            ? "bg-rose-500/15 text-rose-400" 
-                            : r.severity === "medium" 
-                              ? "bg-amber-500/15 text-amber-400" 
-                              : "bg-indigo-500/15 text-indigo-400"
-                        }`}>
-                          {r.severity} Priority
-                        </span>
-                        <h4 className="text-xs font-mono font-bold text-slate-500 uppercase">Automated Alert</h4>
-                      </div>
-                      <h3 className="text-sm font-bold text-white tracking-tight mt-1">{r.item}</h3>
-                      <p className="text-xs text-slate-400 leading-relaxed mt-1">{r.alert}</p>
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-0.5 p-1.5 rounded-lg border ${
+                      r.severity === "high" 
+                        ? "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+                        : r.severity === "medium"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                          : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                    }`}>
+                      {r.severity === "high" ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                     </div>
-
-                    <div className="shrink-0 text-right">
-                      <span className="text-[10px] text-slate-500 block font-mono">Suggested Reorder Quantity</span>
-                      <span className="text-sm font-bold text-white font-mono">{r.reorderQty} units</span>
+                    <div>
+                      <h3 className="font-bold text-slate-200">{r.item}</h3>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.alert}</p>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-1.5 text-slate-400">
-                        <span>Alternative Sourcing:</span>
-                        <span className="font-semibold text-slate-200">{r.alternativeSupplier}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[10px]">
-                        <span>{r.priceReduction}</span>
-                        <span>•</span>
-                        <span>Est. Savings: {r.estimatedSavings}</span>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Reorder Volume</span>
+                      <span className="text-sm font-bold text-slate-200">{r.reorderQty} units</span>
                     </div>
+                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Alt. Supplier</span>
+                      <span className="text-sm font-bold text-slate-200">{r.alternativeSupplier}</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Proj. Savings</span>
+                      <span className="text-sm font-bold text-emerald-400">{r.estimatedSavings}</span>
+                    </div>
+                  </div>
 
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-400/90 font-medium bg-emerald-500/5 px-2 py-1 rounded">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>{r.priceReduction}</span>
+                    </div>
+                    
                     <button 
                       onClick={() => handleApplySourcing(r)}
-                      className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-all flex items-center gap-1 justify-center cursor-pointer shrink-0 button-hover-scale"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer button-hover-scale"
                     >
-                      <Zap className="w-3.5 h-3.5 text-yellow-300" />
-                      <span>Execute Recommendation</span>
+                      <span>Apply Strategy</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
-
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-slate-500 border border-dashed border-slate-900 rounded-2xl bg-[#040815] flex flex-col items-center gap-3">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-                <p className="text-xs font-semibold text-slate-400">All predictions cleared. AI models monitoring supply parameters safely.</p>
+              <div className="p-12 rounded-2xl border border-slate-900 bg-[#040815] flex flex-col items-center justify-center text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-800">
+                  <Sparkles className="w-8 h-8 text-slate-500" />
+                </div>
+                <div>
+                  <h3 className="text-slate-300 font-bold">No Active Recommendations</h3>
+                  <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
+                    The AI engine has optimized your current inventory parameters. Check back later for newly computed sourcing strategies.
+                  </p>
+                </div>
               </div>
             )}
           </div>
