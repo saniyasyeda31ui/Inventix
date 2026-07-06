@@ -27,7 +27,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
   const handleApplySourcing = async (rec: AIRecommendation) => {
     try {
       await executeRecommendation(rec.id);
-      onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.item} from ${rec.alternativeSupplier}.`, "success");
+      onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.product_name} from ${rec.alternativeSupplier}.`, "success");
     } catch (err: any) {
       onShowToast(err.message || "Failed to apply strategy.", "error");
     }
@@ -151,7 +151,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                       {r.severity === "high" ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-200">{r.item}</h3>
+                      <h3 className="font-bold text-slate-200">{r.product_name} {r.product_id && <span className="text-xs text-slate-500 ml-1 font-normal">({r.product_id})</span>}</h3>
                       <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.alert}</p>
                     </div>
                   </div>

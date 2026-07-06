@@ -35,7 +35,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
   const statuses = ["All", "Optimal", "Low Stock", "Critical", "Transit"];
 
   const handleRowClick = (item: LiveStockItem) => {
-    onShowToast(`Selected stock item: ${item.name} - SKU: ${item.sku}. Status is ${item.status}.`, "info");
+    onShowToast(`Selected stock item: ${item.product_name} - SKU: ${item.sku}. Status is ${item.status}.`, "info");
   };
 
   const handleAuditPassed = (id: string, name: string) => {
@@ -98,9 +98,9 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
   // Filter & Paginate
   const filteredStock = stock.filter(item => {
     const matchesSearch = 
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.product_name.toLowerCase().includes(search.toLowerCase()) ||
       item.sku.toLowerCase().includes(search.toLowerCase()) ||
-      item.sector.toLowerCase().includes(search.toLowerCase());
+      item.category.toLowerCase().includes(search.toLowerCase());
     
     const matchesWarehouse = warehouseFilter === "All" || item.warehouse === warehouseFilter;
     const matchesStatus = statusFilter === "All" || item.status === statusFilter;
@@ -256,12 +256,15 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                     className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all cursor-pointer text-xs"
                   >
                     <td className="py-3.5 px-4 font-mono text-slate-300 font-semibold">{item.sku}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{item.name}</td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-200">{item.product_name}</div>
+                      <div className="text-xs text-slate-500">{item.product_id}</div>
+                    </td>
                     <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-200">
                       {item.qty.toLocaleString()} units
                     </td>
                     <td className="py-3.5 px-4 text-slate-400">{item.warehouse}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{item.sector}</td>
+                    <td className="py-3.5 px-4 text-slate-400">{item.category}</td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                         item.status === "Optimal" 
@@ -288,7 +291,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                           {activeMenuId === item.id && (
                             <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               <button
-                                onClick={() => handleAuditPassed(item.id, item.name)}
+                                onClick={() => handleAuditPassed(item.id, item.product_name)}
                                 className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -309,7 +312,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                                 <span>Adjust Stock (-500)</span>
                               </button>
                               <button
-                                onClick={() => handleDelete(item.id, item.name)}
+                                onClick={() => handleDelete(item.id, item.product_name)}
                                 className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 mt-1 border-t border-slate-900/50"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -389,7 +392,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                   >
                     <option value="" disabled>Select a product...</option>
                     {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                      <option key={p.id} value={p.id}>{p.product_name} ({p.product_id})</option>
                     ))}
                   </select>
                 </div>

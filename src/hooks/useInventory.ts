@@ -26,9 +26,13 @@ export function useInventory() {
           on_hand_qty,
           safety_stock_qty,
           products (
-            name,
+            product_name,
+            product_id,
             sku,
-            category
+            category,
+            unit,
+            reorder_level,
+            safety_stock
           ),
           warehouses (
             name
@@ -41,9 +45,9 @@ export function useInventory() {
 
       const mappedInventory: LiveStockItem[] = (data || []).map((row: any) => {
         const qty = Number(row.on_hand_qty);
-        const safety = Number(row.safety_stock_qty);
+        const safety = Number(row.products?.safety_stock) || 0;
         
-        let status: "Optimal" | "Low Stock" | "Critical" | "Transit" = "Optimal";
+        let status: "Optimal" | "Low Stock" | "Critical" | "Transit" | "In Stock" | "Out of Stock" = "Optimal";
         if (qty <= 0) {
           status = "Critical";
         } else if (qty <= safety) {
@@ -52,16 +56,20 @@ export function useInventory() {
 
         return {
           id: row.id,
-          name: row.products?.name || 'Unknown Product',
+          product_id: row.products?.product_id || 'Unknown',
+          product_name: row.products?.product_name || 'Unknown Product',
           sku: row.products?.sku || 'N/A',
-          sector: row.products?.category || 'Uncategorized',
+          category: row.products?.category || 'Uncategorized',
+          unit: row.products?.unit || 'pcs',
+          reorder_level: Number(row.products?.reorder_level) || 0,
+          safety_stock: safety,
           qty: qty,
           warehouse: row.warehouses?.name || 'Unknown Warehouse',
           status: status,
         };
       });
 
-      mappedInventory.sort((a, b) => a.name.localeCompare(b.name));
+      mappedInventory.sort((a, b) => a.product_name.localeCompare(b.product_name));
 
       setInventory(mappedInventory);
     } catch (err: any) {
@@ -79,9 +87,13 @@ export function useInventory() {
     // Create a generic optimistic item (we don't have product/warehouse names here easily without fetching)
     const optimisticItem: LiveStockItem = {
       id: tempId,
-      name: 'Loading...',
+      product_id: productId,
+      product_name: 'Loading...',
       sku: '...',
-      sector: '...',
+      category: '...',
+      unit: 'pcs',
+      reorder_level: 0,
+      safety_stock: safetyStockQty,
       qty: qtyToAdd,
       warehouse: 'Loading...',
       status: qtyToAdd <= 0 ? "Critical" : (qtyToAdd <= safetyStockQty ? "Low Stock" : "Optimal")
@@ -103,7 +115,7 @@ export function useInventory() {
           id,
           on_hand_qty,
           safety_stock_qty,
-          products ( name, sku, category ),
+          products ( product_name, product_id, sku, category, unit, reorder_level, safety_stock ),
           warehouses ( name )
         `)
         .single();
@@ -122,9 +134,13 @@ export function useInventory() {
 
       const realItem: LiveStockItem = {
         id: data.id,
-        name: products.name || 'Unknown Product',
+        product_id: products.product_id || 'Unknown',
+        product_name: products.product_name || 'Unknown Product',
         sku: products.sku || 'N/A',
-        sector: products.category || 'Uncategorized',
+        category: products.category || 'Uncategorized',
+        unit: products.unit || 'pcs',
+        reorder_level: Number(products.reorder_level) || 0,
+        safety_stock: Number(products.safety_stock) || 0,
         qty: qty,
         warehouse: warehouses.name || 'Unknown Warehouse',
         status: status,

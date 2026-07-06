@@ -7,11 +7,13 @@ export interface PurchaseRequest {
   priority: "Low" | "Medium" | "High" | "Critical";
   status: "Pending" | "Approved" | "Rejected";
   amount: string;
-  item: string;
+  product_name: string;
   product_id?: string;
   quantity?: number;
   estimated_cost?: number;
   requestor_id?: string;
+  unit?: string;
+  lead_time_days?: number;
 }
 
 export interface Activity {
@@ -24,23 +26,34 @@ export interface Activity {
 
 export interface LiveStockItem {
   id: string;
-  name: string;
+  product_id: string;
+  product_name: string;
   sku: string;
-  sector: string;
+  category: string;
+  unit: string;
+  reorder_level: number;
+  safety_stock: number;
   qty: number;
   warehouse: string;
-  status: "Optimal" | "Low Stock" | "Critical" | "Transit";
+  status: "Optimal" | "Low Stock" | "Critical" | "Transit" | "In Stock" | "Out of Stock";
 }
 
 export interface ProductItem {
   id: string;
-  name: string;
-  sku: string;
+  product_id: string;
+  product_name: string;
   category: string;
+  description?: string;
+  unit: string;
   unitPrice: number;
+  currentStock: number;
+  reorderLevel: number;
+  safetyStock: number;
+  vendorId: string;
+  primaryVendor: string; // derived from vendor_id
   leadTimeDays: number;
-  primaryVendor: string;
-  stockStatus: "In Stock" | "Low Stock" | "Out of Stock" | "Discontinued";
+  notes?: string;
+  sku?: string;
 }
 
 export interface WarehouseItem {
@@ -108,7 +121,8 @@ export interface PaymentItem {
 
 export interface AIRecommendation {
   id: string | number;
-  item: string;
+  product_id?: string;
+  product_name: string;
   alert: string;
   reorderQty: number;
   alternativeSupplier: string;
@@ -129,7 +143,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "High", 
     status: "Pending", 
     amount: "$12,450", 
-    item: "High-Density Polymer Reels" 
+    product_name: "High-Density Polymer Reels" 
   },
   { 
     id: "PR-2026-002", 
@@ -140,7 +154,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "Critical", 
     status: "Approved", 
     amount: "$45,000", 
-    item: "Silicon-Wafers (Tier-1)" 
+    product_name: "Silicon-Wafers (Tier-1)" 
   },
   { 
     id: "PR-2026-003", 
@@ -151,7 +165,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "Medium", 
     status: "Pending", 
     amount: "$8,200", 
-    item: "Grade-X Copper Tubing" 
+    product_name: "Grade-X Copper Tubing" 
   },
   { 
     id: "PR-2026-004", 
@@ -162,7 +176,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "Low", 
     status: "Approved", 
     amount: "$3,100", 
-    item: "Industrial Storage Pallets" 
+    product_name: "Industrial Storage Pallets" 
   },
   { 
     id: "PR-2026-005", 
@@ -173,7 +187,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "High", 
     status: "Rejected", 
     amount: "$15,600", 
-    item: "Lithium-Ion Cylinders" 
+    product_name: "Lithium-Ion Cylinders" 
   },
   { 
     id: "PR-2026-006", 
@@ -184,7 +198,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "Medium", 
     status: "Pending", 
     amount: "$5,400", 
-    item: "Pressure Relief Valves" 
+    product_name: "Pressure Relief Valves" 
   },
   {
     id: "PR-2026-007",
@@ -195,7 +209,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "High",
     status: "Approved",
     amount: "$22,100",
-    item: "Reinforced Steel Struts"
+    product_name: "Reinforced Steel Struts"
   },
   {
     id: "PR-2026-008",
@@ -206,7 +220,7 @@ export const initialPurchaseRequests: PurchaseRequest[] = [
     priority: "Low",
     status: "Pending",
     amount: "$1,800",
-    item: "Nylon Insulator Spacers"
+    product_name: "Nylon Insulator Spacers"
   }
 ];
 
@@ -220,22 +234,22 @@ export const initialRecentActivities: Activity[] = [
 ];
 
 export const initialLiveStock: LiveStockItem[] = [
-  { id: "STK-101", name: "Copper Tubing (Grade-X)", sku: "COP-TUB-X500", sector: "Bulk Materials", qty: 12500, warehouse: "Chicago Warehouse", status: "Optimal" },
-  { id: "STK-102", name: "Lithium-Ion Cylinders (Type B)", sku: "LITH-CYL-B820", sector: "Energy Cells", qty: 8200, warehouse: "Rotterdam Warehouse", status: "Transit" },
-  { id: "STK-103", name: "Silicon-Wafers (Tier-1 Enterprise)", sku: "SIL-WAF-T100", sector: "Semiconductors", qty: 4200, warehouse: "Singapore Warehouse", status: "Low Stock" },
-  { id: "STK-104", name: "Structural Carbon Steel Bars", sku: "CARB-ST-S910", sector: "Metals", qty: 150, warehouse: "Bangalore Warehouse", status: "Critical" },
-  { id: "STK-105", name: "High-Density Polymer Reels", sku: "POLY-HD-R400", sector: "Plastics", qty: 6100, warehouse: "Rotterdam Warehouse", status: "Optimal" }
+  { id: "STK-101", product_id: "PRD-000201", product_name: "Copper Tubing (Grade-X)", sku: "COP-TUB-X500", category: "Bulk Materials", unit: "m", reorder_level: 500, safety_stock: 200, qty: 12500, warehouse: "Chicago Warehouse", status: "Optimal" },
+  { id: "STK-102", product_id: "PRD-000202", product_name: "Lithium-Ion Cylinders (Type B)", sku: "LITH-CYL-B820", category: "Energy Cells", unit: "pcs", reorder_level: 200, safety_stock: 50, qty: 8200, warehouse: "Rotterdam Warehouse", status: "Transit" },
+  { id: "STK-103", product_id: "PRD-000203", product_name: "Silicon-Wafers (Tier-1 Enterprise)", sku: "SIL-WAF-T100", category: "Semiconductors", unit: "pcs", reorder_level: 150, safety_stock: 50, qty: 4200, warehouse: "Singapore Warehouse", status: "Low Stock" },
+  { id: "STK-104", product_id: "PRD-000204", product_name: "Structural Carbon Steel Bars", sku: "CARB-ST-S910", category: "Metals", unit: "kg", reorder_level: 100, safety_stock: 20, qty: 150, warehouse: "Bangalore Warehouse", status: "Critical" },
+  { id: "STK-105", product_id: "PRD-000205", product_name: "High-Density Polymer Reels", sku: "POLY-HD-R400", category: "Plastics", unit: "reels", reorder_level: 300, safety_stock: 100, qty: 6100, warehouse: "Rotterdam Warehouse", status: "Optimal" }
 ];
 
 export const initialProducts: ProductItem[] = [
-  { id: "PROD-201", name: "Copper Tubing (Grade-X)", sku: "COP-TUB-X500", category: "Bulk Materials", unitPrice: 12.50, leadTimeDays: 7, primaryVendor: "SteelWorks Ltd", stockStatus: "In Stock" },
-  { id: "PROD-202", name: "Lithium-Ion Cylinders (Type B)", sku: "LITH-CYL-B820", category: "Energy Cells", unitPrice: 35.00, leadTimeDays: 14, primaryVendor: "Belgrave Chemicals", stockStatus: "In Stock" },
-  { id: "PROD-203", name: "Silicon-Wafers (Tier-1 Enterprise)", sku: "SIL-WAF-T100", category: "Semiconductors", unitPrice: 125.00, leadTimeDays: 21, primaryVendor: "Intel Sourcing", stockStatus: "Low Stock" },
-  { id: "PROD-204", name: "Structural Carbon Steel Bars", sku: "CARB-ST-S910", category: "Metals", unitPrice: 48.00, leadTimeDays: 5, primaryVendor: "SteelWorks Ltd", stockStatus: "Low Stock" },
-  { id: "PROD-205", name: "High-Density Polymer Reels", sku: "POLY-HD-R400", category: "Plastics", unitPrice: 9.20, leadTimeDays: 8, primaryVendor: "Global Plastics Corp", stockStatus: "In Stock" },
-  { id: "PROD-206", name: "Ceramic Terminal Blocks", sku: "CER-TERM-B20", category: "Components", unitPrice: 4.50, leadTimeDays: 4, primaryVendor: "Valves & Fittings Inc", stockStatus: "In Stock" },
-  { id: "PROD-207", name: "Titanium Alloy Hex Fasteners", sku: "TIT-ALL-F44", category: "Components", unitPrice: 15.80, leadTimeDays: 10, primaryVendor: "SteelWorks Ltd", stockStatus: "In Stock" },
-  { id: "PROD-208", name: "Pressure Relief Valves", sku: "VALV-PRE-V12", category: "Components", unitPrice: 85.00, leadTimeDays: 12, primaryVendor: "Valves & Fittings Inc", stockStatus: "In Stock" }
+  { id: "uuid-1", product_id: "PRD-000201", product_name: "Copper Tubing (Grade-X)", sku: "COP-TUB-X500", category: "Bulk Materials", unit: "m", unitPrice: 12.50, currentStock: 1500, reorderLevel: 500, safetyStock: 200, vendorId: "VEN-001", primaryVendor: "SteelWorks Ltd", leadTimeDays: 7 },
+  { id: "uuid-2", product_id: "PRD-000202", product_name: "Lithium-Ion Cylinders (Type B)", sku: "LITH-CYL-B820", category: "Energy Cells", unit: "pcs", unitPrice: 35.00, currentStock: 820, reorderLevel: 200, safetyStock: 50, vendorId: "VEN-004", primaryVendor: "Belgrave Chemicals", leadTimeDays: 14 },
+  { id: "uuid-3", product_id: "PRD-000203", product_name: "Silicon-Wafers (Tier-1 Enterprise)", sku: "SIL-WAF-T100", category: "Semiconductors", unit: "pcs", unitPrice: 125.00, currentStock: 120, reorderLevel: 150, safetyStock: 50, vendorId: "VEN-002", primaryVendor: "Intel Sourcing", leadTimeDays: 21 },
+  { id: "uuid-4", product_id: "PRD-000204", product_name: "Structural Carbon Steel Bars", sku: "CARB-ST-S910", category: "Metals", unit: "kg", unitPrice: 48.00, currentStock: 45, reorderLevel: 100, safetyStock: 20, vendorId: "VEN-001", primaryVendor: "SteelWorks Ltd", leadTimeDays: 5 },
+  { id: "uuid-5", product_id: "PRD-000205", product_name: "High-Density Polymer Reels", sku: "POLY-HD-R400", category: "Plastics", unit: "reels", unitPrice: 9.20, currentStock: 1200, reorderLevel: 300, safetyStock: 100, vendorId: "VEN-003", primaryVendor: "Global Plastics Corp", leadTimeDays: 8 },
+  { id: "uuid-6", product_id: "PRD-000206", product_name: "Ceramic Terminal Blocks", sku: "CER-TERM-B20", category: "Components", unit: "pcs", unitPrice: 4.50, currentStock: 4500, reorderLevel: 1000, safetyStock: 200, vendorId: "VEN-005", primaryVendor: "Valves & Fittings Inc", leadTimeDays: 4 },
+  { id: "uuid-7", product_id: "PRD-000207", product_name: "Titanium Alloy Hex Fasteners", sku: "TIT-ALL-F44", category: "Components", unit: "pcs", unitPrice: 15.80, currentStock: 800, reorderLevel: 250, safetyStock: 100, vendorId: "VEN-001", primaryVendor: "SteelWorks Ltd", leadTimeDays: 10 },
+  { id: "uuid-8", product_id: "PRD-000208", product_name: "Pressure Relief Valves", sku: "VALV-PRE-V12", category: "Components", unit: "pcs", unitPrice: 85.00, currentStock: 320, reorderLevel: 100, safetyStock: 30, vendorId: "VEN-005", primaryVendor: "Valves & Fittings Inc", leadTimeDays: 12 }
 ];
 
 export const initialWarehouses: WarehouseItem[] = [

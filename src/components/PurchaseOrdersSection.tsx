@@ -397,7 +397,7 @@ export default function PurchaseOrdersSection({ onShowToast, activeModal, onClos
                     >
                       <option value="">-- No linked request --</option>
                       {purchaseRequests.map(pr => (
-                        <option key={pr.id} value={pr.id}>{pr.id} ({pr.item})</option>
+                        <option key={pr.id} value={pr.id}>{pr.id} ({pr.product_name})</option>
                       ))}
                     </select>
                   </div>

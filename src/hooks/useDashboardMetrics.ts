@@ -101,14 +101,14 @@ export function useDashboardMetrics(role: AppRole) {
       if (isInventory) {
         const { data: invData, error: invError } = await supabase
           .from('inventory_balances')
-          .select(`on_hand_qty, safety_stock_qty, products ( unit_price )`);
+          .select(`on_hand_qty, safety_stock_qty, products ( unit_price, safety_stock )`);
         if (!invError && invData) {
           invData.forEach((row: any) => {
             const qty = Number(row.on_hand_qty) || 0;
             const price = Number(row.products?.unit_price) || 0;
             m.totalInventoryValue += qty * price;
-            if (qty <= (Number(row.safety_stock_qty) || 0)) m.lowStockCount++;
-            if (qty > (Number(row.safety_stock_qty) || 0) * 3) m.overstockCount++; // Mock overstock logic
+            if (qty <= (Number(row.products?.safety_stock) || 0)) m.lowStockCount++;
+            if (qty > (Number(row.products?.safety_stock) || 0) * 3) m.overstockCount++; // Mock overstock logic
           });
         }
       }

@@ -33,7 +33,7 @@ export function usePurchaseRequests() {
           status,
           estimated_cost,
           product_name,
-          products ( name ),
+          products ( product_name, product_id, unit, lead_time_days ),
           requestorProfile:profiles!requestor_id ( full_name )
         `)
         .order('created_at', { ascending: false });
@@ -51,7 +51,7 @@ export function usePurchaseRequests() {
           maximumFractionDigits: 0
         }).format(cost);
 
-        const itemName = row.products?.name || row.product_name || 'Unknown Item';
+        const itemName = row.products?.product_name || row.product_name || 'Unknown Product';
         const requestorName = row.requestorProfile?.full_name || row.requestor || 'Unknown Requestor';
 
         return {
@@ -63,7 +63,10 @@ export function usePurchaseRequests() {
           priority: row.priority,
           status: row.status,
           amount: formattedCost,
-          item: itemName,
+          product_name: itemName,
+          product_id: row.products?.product_id || null,
+          unit: row.products?.unit || 'pcs',
+          lead_time_days: Number(row.products?.lead_time_days) || 0,
         };
       });
 
@@ -81,7 +84,7 @@ export function usePurchaseRequests() {
     
     const dbPayload = {
       id: tempId,
-      product_name: requestData.item || 'Unknown Product',
+      product_name: requestData.product_name || 'Unknown Product',
       product_id: requestData.product_id || null,
       quantity: requestData.quantity || 1,
       estimated_cost: requestData.estimated_cost || 0,
@@ -107,7 +110,10 @@ export function usePurchaseRequests() {
       priority: dbPayload.priority as any,
       status: 'Pending',
       amount: formattedCost,
-      item: dbPayload.product_name
+      product_name: dbPayload.product_name,
+      product_id: dbPayload.product_id,
+      unit: 'pcs', // optimistic
+      lead_time_days: 0 // optimistic
     };
 
     setPurchaseRequests(prev => [optimisticRequest, ...prev]);

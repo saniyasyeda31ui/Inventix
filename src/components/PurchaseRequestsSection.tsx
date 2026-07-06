@@ -37,7 +37,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       setEditingRequest(null);
       setFormData({
         product_id: "",
-        item: "",
+        product_name: "",
         quantity: 1,
         estimated_cost: 0,
         department: "Operations",
@@ -51,7 +51,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
 
   const [formData, setFormData] = useState<Partial<PurchaseRequest>>({
     product_id: "",
-    item: "",
+    product_name: "",
     quantity: 1,
     estimated_cost: 0,
     department: "Operations",
@@ -63,7 +63,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
   const openAddModal = () => {
     setFormData({
       product_id: "",
-      item: "",
+      product_name: "",
       quantity: 1,
       estimated_cost: 0,
       department: "Operations",
@@ -78,7 +78,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
   const openEditModal = (req: PurchaseRequest) => {
     setFormData({
       product_id: req.product_id || "",
-      item: req.item || "",
+      product_name: req.product_name || "",
       quantity: req.quantity || 1,
       estimated_cost: req.estimated_cost || 0,
       department: req.department || "Operations",
@@ -130,7 +130,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
     }
     try {
       const selectedProduct = products.find(p => p.id === formData.product_id);
-      const submitData = { ...formData, item: selectedProduct ? selectedProduct.name : formData.item };
+      const submitData = { ...formData, product_name: selectedProduct ? selectedProduct.product_name : formData.product_name };
 
       if (editingRequest) {
         await updatePurchaseRequest(editingRequest.id, submitData);
@@ -151,7 +151,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
     const matchesSearch = 
       r.id.toLowerCase().includes(search.toLowerCase()) ||
       r.requestedBy.toLowerCase().includes(search.toLowerCase()) ||
-      r.item.toLowerCase().includes(search.toLowerCase()) ||
+      r.product_name.toLowerCase().includes(search.toLowerCase()) ||
       r.supplier.toLowerCase().includes(search.toLowerCase());
 
     const matchesPriority = priorityFilter === "All" || r.priority === priorityFilter;
@@ -292,7 +292,10 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                     className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
                   >
                     <td className="py-3.5 px-4 font-mono text-slate-400 font-semibold">{r.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{r.item} <span className="text-slate-500 font-normal ml-1">x{r.quantity || 1}</span></td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-200">{r.product_name} <span className="text-slate-500 font-normal ml-1">x{r.quantity || 1}</span></div>
+                      {r.product_id && <div className="text-xs text-slate-500">{r.product_id}</div>}
+                    </td>
                     <td className="py-3.5 px-4">
                       <span className="text-slate-300 block">{r.requestedBy}</span>
                       <span className="text-[10px] text-slate-500 block">{r.department}</span>
@@ -448,7 +451,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                     >
                       <option value="">Select a Product</option>
                       {products.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                        <option key={p.id} value={p.id}>{p.product_name} ({p.product_id})</option>
                       ))}
                     </select>
                   </div>

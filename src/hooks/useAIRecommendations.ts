@@ -41,7 +41,7 @@ export function useAIRecommendations() {
 
         return {
           id: row.id,
-          item: row.item,
+          product_name: row.item,
           alert: row.alert_message,
           reorderQty: row.suggested_qty,
           alternativeSupplier: row.alternative_supplier || "Unknown",
