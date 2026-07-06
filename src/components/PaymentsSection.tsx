@@ -1,33 +1,143 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
-  CreditCard, Search, Filter, RefreshCw, ChevronLeft, ChevronRight, 
-  MoreVertical, Check, ArrowUpRight, ShieldCheck, MailWarning, AlertCircle
+  CreditCard, Search, RefreshCw, ChevronLeft, ChevronRight, 
+  MoreVertical, ShieldCheck, AlertCircle, Plus, Edit2, Trash2, X, Check
 } from "lucide-react";
 import { PaymentItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
 import { usePayments } from "../hooks/usePayments";
+import { usePurchaseOrders } from "../hooks/usePurchaseOrders";
+import { useAuth } from "../context/AuthContext";
 
 interface PaymentsSectionProps {
-  onShowToast: (msg: string, type?: "success" | "info") => void;
+  activeModal: string | null;
+  onCloseModal: () => void;
+  onShowToast: (msg: string, type?: "success" | "info" | "error") => void;
 }
 
-export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
-  const { payments, setPayments, loading, error, refreshPayments } = usePayments();
+export default function PaymentsSection({ activeModal, onCloseModal, onShowToast }: PaymentsSectionProps) {
+  const { permissions } = useAuth();
+  const { payments, loading, error, refreshPayments, addPayment, updatePayment, deletePayment } = usePayments();
+  const { purchaseOrders, refreshPurchaseOrders } = usePurchaseOrders();
+  
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [editingUuid, setEditingUuid] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState<Partial<PaymentItem>>({
+    purchase_order_id: "",
+    amount_paid: 0,
+    dueDate: new Date().toISOString().split("T")[0],
+    method: "Wire Transfer",
+    status: "Pending"
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const itemsPerPage = 5;
 
-  const handleProcessPayment = (id: string, vendor: string, amount: string) => {
-    setPayments(payments.map(p => p.id === id ? { ...p, status: "Paid" } : p));
-    onShowToast(`Dispatched secure bank instruction to clear ${amount} invoice to ${vendor}.`, "success");
+  useEffect(() => {
+    if (activeModal === "createPayment") {
+      handleOpenAddModal();
+    }
+  }, [activeModal]);
+
+  const handleOpenAddModal = () => {
+    setModalMode("add");
+    setEditingUuid(null);
+    setFormData({
+      purchase_order_id: "",
+      amount_paid: 0,
+      dueDate: new Date().toISOString().split("T")[0],
+      method: "Wire Transfer",
+      status: "Pending"
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (p: PaymentItem) => {
+    setModalMode("edit");
+    setEditingUuid(p.uuid || null);
+    setFormData({
+      purchase_order_id: p.purchase_order_id || "",
+      amount_paid: p.amount_paid || 0,
+      dueDate: p.dueDate || new Date().toISOString().split("T")[0],
+      method: p.method,
+      status: p.status
+    });
+    setIsModalOpen(true);
     setActiveMenuId(null);
   };
 
-  const handleSendReminder = (vendor: string) => {
-    onShowToast(`Sent billing synchronization request to ${vendor}.`, "success");
+  const handleCloseModalInternal = () => {
+    setIsModalOpen(false);
+    onCloseModal(); // notify parent
+  };
+
+  const handlePurchaseOrderSelect = (poUuid: string) => {
+    const po = purchaseOrders.find(p => p.uuid === poUuid || p.id === poUuid);
+    if (po) {
+      setFormData(prev => ({
+        ...prev,
+        purchase_order_id: poUuid,
+        purchase_order_number: po.id, // Display only
+        vendorName: po.vendorName,
+        amount_paid: typeof po.amount === 'string' ? parseFloat(po.amount.replace(/[^0-9.-]+/g,"")) : (po.amount || 0),
+        dueDate: po.deliveryDate || prev.dueDate
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        purchase_order_id: poUuid
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      if (modalMode === "add") {
+        await addPayment(formData);
+        onShowToast(`Created payment record successfully!`, "success");
+      } else {
+        if (!editingUuid) throw new Error("Missing UUID for update");
+        await updatePayment(editingUuid, formData);
+        onShowToast(`Updated payment record successfully!`, "success");
+      }
+      handleCloseModalInternal();
+    } catch (err: any) {
+      onShowToast(`Failed to ${modalMode} payment: ${err.message}`, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (uuid: string, invoiceId: string) => {
+    if (!confirm(`Are you sure you want to delete payment ${invoiceId}?`)) return;
+    try {
+      await deletePayment(uuid);
+      onShowToast(`Deleted payment ${invoiceId} successfully.`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to delete payment: ${err.message}`, "error");
+    }
+    setActiveMenuId(null);
+  };
+
+  const handleProcessPayment = async (uuid: string, vendor: string, amount: string) => {
+    try {
+      await updatePayment(uuid, { status: "Paid" });
+      onShowToast(`Dispatched secure bank instruction to clear ${amount} invoice to ${vendor}.`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to authorize payment: ${err.message}`, "error");
+    }
     setActiveMenuId(null);
   };
 
@@ -55,6 +165,15 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
           </h1>
           <p className="text-xs text-slate-500 mt-1">Settle outstanding raw material acquisition bills, wire transfers, and tax reconciliation records.</p>
         </div>
+        {permissions?.canManagePayments && (
+          <button 
+            onClick={handleOpenAddModal}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-lg shadow-indigo-900/20"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Payment</span>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -92,6 +211,7 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
               setSearch("");
               setStatusFilter("All");
               refreshPayments();
+              refreshPurchaseOrders();
               onShowToast("Filters reset and payments refreshed.", "info");
             }}
             className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
@@ -125,14 +245,14 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Payment Reference</th>
                 <th className="py-3 px-4">Invoice Reference</th>
+                <th className="py-3 px-4">PO Reference</th>
                 <th className="py-3 px-4">Vendor Partner</th>
                 <th className="py-3 px-4 text-right">Acquisition Total</th>
                 <th className="py-3 px-4">Due Date</th>
                 <th className="py-3 px-4">Settle Method</th>
                 <th className="py-3 px-4">Settlement Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                {permissions?.canManagePayments && <th className="py-3 px-4 text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -147,17 +267,17 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                    {permissions?.canManagePayments && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : paginatedPayments.length > 0 ? (
                 paginatedPayments.map((p) => (
                   <tr 
-                    key={p.id}
+                    key={p.uuid || p.id}
                     className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
                   >
-                    <td className="py-3.5 px-4 font-mono text-slate-400 font-semibold">{p.id}</td>
                     <td className="py-3.5 px-4 font-mono text-slate-400">{p.invoiceId}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.purchase_order_number}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-200">{p.vendorName}</td>
                     <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">{p.amount}</td>
                     <td className="py-3.5 px-4 font-mono text-slate-500">{p.dueDate}</td>
@@ -170,42 +290,55 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
                             ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/10"
                             : p.status === "Pending"
                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
+                              : p.status === "Unpaid"
+                              ? "bg-slate-500/10 text-slate-400 border border-slate-500/10"
                               : "bg-rose-500/10 text-rose-400 border border-rose-500/10"
                       }`}>
                         {p.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="relative inline-block text-left">
-                        <button 
-                          onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {activeMenuId === p.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                            {p.status !== "Paid" && (
+                    {permissions?.canManagePayments && (
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
+                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenuId === p.id && (
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                              {p.status !== "Paid" && p.uuid && (
+                                <button
+                                  onClick={() => handleProcessPayment(p.uuid as string, p.vendorName, p.amount)}
+                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-emerald-600/10 hover:text-white flex items-center gap-1.5"
+                                >
+                                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span>Authorize Payment</span>
+                                </button>
+                              )}
                               <button
-                                onClick={() => handleProcessPayment(p.id, p.vendorName, p.amount)}
+                                onClick={() => handleOpenEditModal(p)}
                                 className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                                <span>Authorize Payment</span>
+                                <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Edit Payment</span>
                               </button>
-                            )}
-                            <button
-                              onClick={() => handleSendReminder(p.vendorName)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Check className="w-3.5 h-3.5 text-indigo-400" />
-                              <span>Sync Billing info</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                              {p.uuid && (
+                                <button
+                                  onClick={() => handleDelete(p.uuid as string, p.invoiceId)}
+                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-600/10 hover:text-rose-300 flex items-center gap-1.5"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
@@ -242,6 +375,141 @@ export default function PaymentsSection({ onShowToast }: PaymentsSectionProps) {
           </div>
         </div>
       </div>
+
+      {/* Add / Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#0a0e1a] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+            
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/20">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-indigo-400" />
+                {modalMode === "add" ? "Create New Payment" : "Edit Payment"}
+              </h2>
+              <button 
+                onClick={handleCloseModalInternal}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
+              <form id="payment-form" onSubmit={handleSubmit} className="space-y-4 text-xs">
+                
+                {/* Purchase Order Selection */}
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Linked Purchase Order</label>
+                  <select
+                    required
+                    value={formData.purchase_order_id}
+                    onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="" disabled>Select a Purchase Order...</option>
+                    {purchaseOrders.map((po) => (
+                      <option key={po.uuid || po.id} value={po.uuid || po.id}>
+                        {po.id} - {po.vendorName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Vendor</label>
+                  <input 
+                    type="text" 
+                    readOnly 
+                    value={formData.vendorName || "Auto-populated"} 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-500 focus:outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Amount Paid ($)</label>
+                    <input 
+                      required
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={formData.amount_paid}
+                      onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Due Date</label>
+                    <input 
+                      required
+                      type="date"
+                      value={formData.dueDate}
+                      onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Payment Method</label>
+                    <select
+                      required
+                      value={formData.method}
+                      onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="ACH">ACH</option>
+                      <option value="ACH Transfer">ACH Transfer</option>
+                      <option value="Wire">Wire</option>
+                      <option value="Wire Transfer">Wire Transfer</option>
+                      <option value="Check">Check</option>
+                      <option value="Credit Card">Credit Card</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Status</label>
+                    <select
+                      required
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="Unpaid">Unpaid</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Overdue">Overdue</option>
+                      <option value="Disputed">Disputed</option>
+                    </select>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+
+            <div className="p-4 border-t border-slate-800 bg-slate-900/20 flex justify-end gap-3">
+              <button 
+                type="button"
+                onClick={handleCloseModalInternal}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                form="payment-form"
+                disabled={isSubmitting}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-lg shadow-indigo-900/20 flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {modalMode === "add" ? "Create Payment" : "Save Changes"}
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      )}
 
     </div>
   );

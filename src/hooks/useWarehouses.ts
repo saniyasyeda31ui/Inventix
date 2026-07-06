@@ -37,6 +37,7 @@ export function useWarehouses() {
       // Map the database snake_case columns to the frontend camelCase interface
       const mappedWarehouses: WarehouseItem[] = (data || []).map((row: any) => ({
         id: row.code, // Map DB text code ('WH-001') to frontend id
+        uuid: row.id,
         name: row.name,
         location: row.location,
         manager: row.employees?.full_name || 'Unassigned',
@@ -54,6 +55,93 @@ export function useWarehouses() {
     }
   }, []);
 
+  const addWarehouse = async (warehouseData: any) => {
+    const tempId = `WH-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+    
+    const dbPayload = {
+      code: tempId,
+      name: warehouseData.name,
+      location: warehouseData.location,
+      max_cubic_capacity: warehouseData.totalAreaSqFt,
+      current_occupancy_pct: 0,
+      status: 'Active'
+    };
+
+    const optimisticWarehouse: WarehouseItem = {
+      id: dbPayload.code,
+      name: dbPayload.name,
+      location: dbPayload.location,
+      totalAreaSqFt: dbPayload.max_cubic_capacity,
+      capacityUsed: 0,
+      manager: 'Unassigned',
+      status: 'Active'
+    };
+
+    setWarehouses(prev => [...prev, optimisticWarehouse]);
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from('warehouses')
+        .insert([dbPayload])
+        .select()
+        .single();
+
+      if (insertError) throw new Error(insertError.message);
+      
+      setWarehouses(prev => prev.map(w => w.id === optimisticWarehouse.id ? { ...w, uuid: data.id, id: data.code } : w));
+    } catch (err: any) {
+      setWarehouses(prev => prev.filter(w => w.id !== optimisticWarehouse.id));
+      throw err;
+    }
+  };
+
+  const updateWarehouse = async (id: string, updates: any) => {
+    const warehouseToUpdate = warehouses.find(w => w.id === id);
+    if (!warehouseToUpdate || !warehouseToUpdate.uuid) throw new Error("Warehouse not found or missing UUID");
+
+    const previousWarehouses = [...warehouses];
+    const optimisticUpdated = { ...warehouseToUpdate, ...updates };
+    setWarehouses(prev => prev.map(w => w.id === id ? optimisticUpdated : w));
+
+    try {
+      const dbPayload: any = {};
+      if (updates.name !== undefined) dbPayload.name = updates.name;
+      if (updates.location !== undefined) dbPayload.location = updates.location;
+      if (updates.totalAreaSqFt !== undefined) dbPayload.max_cubic_capacity = updates.totalAreaSqFt;
+      if (updates.status !== undefined) dbPayload.status = updates.status;
+
+      const { error: updateError } = await supabase
+        .from('warehouses')
+        .update(dbPayload)
+        .eq('id', warehouseToUpdate.uuid);
+
+      if (updateError) throw new Error(updateError.message);
+    } catch (err: any) {
+      setWarehouses(previousWarehouses);
+      throw err;
+    }
+  };
+
+  const deleteWarehouse = async (id: string) => {
+    const warehouseToDelete = warehouses.find(w => w.id === id);
+    if (!warehouseToDelete || !warehouseToDelete.uuid) throw new Error("Warehouse not found or missing UUID");
+
+    const previousWarehouses = [...warehouses];
+    setWarehouses(prev => prev.filter(w => w.id !== id));
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('warehouses')
+        .delete()
+        .eq('id', warehouseToDelete.uuid);
+
+      if (deleteError) throw new Error(deleteError.message);
+    } catch (err: any) {
+      setWarehouses(previousWarehouses);
+      throw err;
+    }
+  };
+
   // Fetch immediately on mount
   useEffect(() => {
     fetchWarehouses();
@@ -64,6 +152,9 @@ export function useWarehouses() {
     loading,
     error,
     refreshWarehouses: fetchWarehouses,
-    setWarehouses // Provided for optimistic UI updates in the component
+    setWarehouses,
+    addWarehouse,
+    updateWarehouse,
+    deleteWarehouse
   };
 }

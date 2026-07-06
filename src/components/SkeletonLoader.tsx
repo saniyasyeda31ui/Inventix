@@ -1,10 +1,13 @@
 import React from "react";
 
 interface SkeletonLoaderProps {
-  tab: string;
+  tab?: string;
+  count?: number;
+  height?: string;
+  className?: string;
 }
 
-export default function SkeletonLoader({ tab }: SkeletonLoaderProps) {
+export default function SkeletonLoader({ tab, className }: SkeletonLoaderProps) {
   // Determine loader type based on selected tab
   if (tab === "Overview") {
     return (

@@ -8,6 +8,10 @@ export interface PurchaseRequest {
   status: "Pending" | "Approved" | "Rejected";
   amount: string;
   item: string;
+  product_id?: string;
+  quantity?: number;
+  estimated_cost?: number;
+  requestor_id?: string;
 }
 
 export interface Activity {
@@ -40,7 +44,8 @@ export interface ProductItem {
 }
 
 export interface WarehouseItem {
-  id: string;
+  id: string; // The code
+  uuid?: string; // The db id
   name: string;
   location: string;
   manager: string;
@@ -51,6 +56,7 @@ export interface WarehouseItem {
 
 export interface VendorItem {
   id: string;
+  uuid?: string;
   name: string;
   category: string;
   score: number; // 0-100
@@ -61,9 +67,13 @@ export interface VendorItem {
 }
 
 export interface PurchaseOrder {
-  id: string;
+  id: string; // Used for po_number in UI
+  uuid?: string;
+  purchase_request_id?: string;
+  vendor_id?: string;
   vendorName: string;
   amount: string;
+  total_amount?: number;
   dateCreated: string;
   deliveryDate: string;
   status: "Draft" | "Pending Approval" | "Sent" | "Partially Received" | "Completed" | "Cancelled";
@@ -72,22 +82,28 @@ export interface PurchaseOrder {
 }
 
 export interface EmployeeItem {
-  id: string;
+  id: string; // Display ID (e.g. EMP-XXXX)
+  uuid?: string;
   name: string;
   email: string;
-  role: "Lead Administrator" | "Warehouse Manager" | "Procurement Specialist" | "Inventory Auditor";
-  department: "Procurement" | "Operations" | "Logistics" | "Finance";
-  status: "Active" | "On Leave" | "Suspended";
+  role: string; // Maps to 'title' in DB
+  department: string;
+  status: string;
+  manager_id?: string | null;
 }
 
 export interface PaymentItem {
-  id: string;
+  id: string; // Used for invoice_number in UI
+  uuid?: string;
   invoiceId: string;
+  purchase_order_id?: string;
+  purchase_order_number?: string;
   vendorName: string;
-  amount: string;
+  amount_paid?: number;
+  amount: string; // Formatted
   dueDate: string;
-  status: "Paid" | "Pending" | "Overdue" | "Processing";
-  method: "ACH Transfer" | "Wire Transfer" | "Credit Card" | "Check";
+  status: "Paid" | "Pending" | "Overdue" | "Processing" | "Unpaid" | "Disputed";
+  method: "ACH" | "ACH Transfer" | "Wire" | "Wire Transfer" | "Credit Card" | "Check";
 }
 
 export interface AIRecommendation {

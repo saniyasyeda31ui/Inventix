@@ -6,14 +6,28 @@ import { ProductItem } from "../data/dashboardData";
 import { HighlightText, SortIndicator, EmptyState } from "./TableUX";
 import SkeletonLoader from "./SkeletonLoader";
 import { useProducts } from "../hooks/useProducts";
+import { formatCurrency } from "../utils/formatters";
+import { useAuth } from "../context/AuthContext";
 
 interface ProductsSectionProps {
-  onShowToast: (msg: string, type?: "success" | "info") => void;
+  onShowToast: (msg: string, type?: "success" | "info" | "warning" | "error") => void;
   onOpenModal: (modalName: string) => void;
+  activeModal?: string | null;
+  onCloseModal?: () => void;
 }
 
-export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSectionProps) {
-  const { products, setProducts, loading, error, refreshProducts } = useProducts();
+export default function ProductsSection({ onShowToast, onOpenModal, activeModal, onCloseModal }: ProductsSectionProps) {
+  const { permissions } = useAuth();
+  const { products, setProducts, loading, error, refreshProducts, addProduct, updateProduct, deleteProduct } = useProducts();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  
+  const showAddModal = isAddModalOpen || activeModal === "addProduct";
+
+  // Form states
+  const initialFormState = { name: "", sku: "", category: "Bulk Materials", unitPrice: 0, leadTimeDays: 7, primaryVendor: "Acme Corp", stockStatus: "In Stock" as "In Stock" | "Low Stock" | "Out of Stock" | "Discontinued" };
+  const [formData, setFormData] = useState(initialFormState);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -38,17 +52,70 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
     onShowToast(`Sorted products by ${type} (${sortOrder === "asc" ? "descending" : "ascending"})`, "info");
   };
 
-  const handleDelete = (id: string, name: string) => {
-    setProducts(products.filter(p => p.id !== id));
-    onShowToast(`Deleted ${name} from inventory catalog.`, "success");
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      await deleteProduct(id);
+      onShowToast(`Deleted ${name} from inventory catalog.`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to delete ${name}: ${err.message}`, "error");
+    }
     setActiveMenuId(null);
   };
 
-  const handleUpdateStatus = (id: string, nextStatus: any) => {
-    setProducts(products.map(p => p.id === id ? { ...p, stockStatus: nextStatus } : p));
-    onShowToast(`Updated product status to ${nextStatus}`, "success");
+  const handleUpdateStatus = async (id: string, nextStatus: any) => {
+    try {
+      await updateProduct(id, { stockStatus: nextStatus });
+      onShowToast(`Updated product status to ${nextStatus}`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to update status: ${err.message}`, "error");
+    }
     setActiveMenuId(null);
   };
+
+  const handleEditClick = (p: ProductItem) => {
+    setFormData({
+      name: p.name,
+      sku: p.sku,
+      category: p.category,
+      unitPrice: p.unitPrice,
+      leadTimeDays: p.leadTimeDays,
+      primaryVendor: p.primaryVendor,
+      stockStatus: p.stockStatus
+    });
+    setEditingProductId(p.id);
+    setIsEditModalOpen(true);
+    setActiveMenuId(null);
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.sku) return onShowToast("Please fill out name and SKU", "error");
+    try {
+      await addProduct(formData);
+      onShowToast(`Successfully registered ${formData.name}!`, "success");
+      setIsAddModalOpen(false);
+      onCloseModal?.();
+      setFormData(initialFormState);
+    } catch (err: any) {
+      onShowToast(`Failed to add product: ${err.message}`, "error");
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProductId) return;
+    try {
+      await updateProduct(editingProductId, formData);
+      onShowToast(`Successfully updated ${formData.name}!`, "success");
+      setIsEditModalOpen(false);
+      setEditingProductId(null);
+      setFormData(initialFormState);
+    } catch (err: any) {
+      onShowToast(`Failed to update product: ${err.message}`, "error");
+    }
+  };
+
+
 
   const handleRowClick = (product: ProductItem) => {
     onShowToast(`Selected product: ${product.name} (SKU: ${product.sku}) - Lead time ${product.leadTimeDays} days.`, "info");
@@ -88,13 +155,18 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
           </h1>
           <p className="text-xs text-slate-500 mt-1">Manage global manufactured materials, SKUs, and default sourcing settings.</p>
         </div>
-        <button
-          onClick={() => onOpenModal("addProduct")}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Register Product</span>
-        </button>
+        {permissions?.canManageInventory && (
+          <button
+            onClick={() => {
+              setFormData(initialFormState);
+              setIsAddModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register Product</span>
+          </button>
+        )}
       </div>
 
       {/* Filters Bar */}
@@ -198,7 +270,7 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
                 </th>
                 <th className="py-3 px-4">Primary Sourcing Vendor</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                {permissions?.canManageInventory && <th className="py-3 px-4 text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -213,7 +285,7 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded mx-auto" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-28 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                    {permissions?.canManageInventory && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : paginatedProducts.length > 0 ? (
@@ -236,7 +308,7 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
                     </td>
                     <td className="py-3.5 px-4 text-slate-400">{p.category}</td>
                     <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-200">
-                      ${p.unitPrice.toFixed(2)}
+                      {formatCurrency(p.unitPrice)}
                     </td>
                     <td className="py-3.5 px-4 text-center font-mono text-slate-400">
                       {p.leadTimeDays} days
@@ -255,43 +327,52 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
                         {p.stockStatus}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block text-left">
-                        <button 
-                          onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {activeMenuId === p.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                            <button
-                              onClick={() => handleUpdateStatus(p.id, "In Stock")}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              <span>Set In Stock</span>
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(p.id, "Low Stock")}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Check className="w-3.5 h-3.5 text-amber-500" />
-                              <span>Set Low Stock</span>
-                            </button>
-                            <div className="h-px bg-slate-900 my-1" />
-                            <button
-                              onClick={() => handleDelete(p.id, p.name)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Delete Product</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                    {permissions?.canManageInventory && (
+                      <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
+                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenuId === p.id && (
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                              <button
+                                onClick={() => handleUpdateStatus(p.id, "In Stock")}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Set In Stock</span>
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(p.id, "Low Stock")}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Check className="w-3.5 h-3.5 text-amber-500" />
+                                <span>Set Low Stock</span>
+                              </button>
+                              <button
+                                onClick={() => handleEditClick(p)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Edit Details</span>
+                              </button>
+                              <div className="h-px bg-slate-900 my-1" />
+                              <button
+                                onClick={() => handleDelete(p.id, p.name)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Product</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
@@ -342,6 +423,57 @@ export default function ProductsSection({ onShowToast, onOpenModal }: ProductsSe
           </div>
         </div>
       </div>
+
+      {/* Add / Edit Modals */}
+      {(showAddModal || isEditModalOpen) && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
+          <div className="relative w-full max-w-md bg-[#050914] border border-slate-900 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
+                <Box className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">{isEditModalOpen ? "Edit Product Details" : "Register Product SKU"}</h3>
+              </div>
+              <div className="space-y-3 text-xs">
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Product Name</label>
+                  <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">SKU</label>
+                    <input required type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Category</label>
+                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Unit Price ($)</label>
+                    <input required type="number" min="0" step="any" value={formData.unitPrice} onChange={e => setFormData({ ...formData, unitPrice: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Lead Time (Days)</label>
+                    <input required type="number" min="0" value={formData.leadTimeDays} onChange={e => setFormData({ ...formData, leadTimeDays: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Primary Vendor</label>
+                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                </div>
+              </div>
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
+                <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer">
+                  {isEditModalOpen ? "Save Changes" : "Register SKU"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

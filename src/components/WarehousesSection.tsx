@@ -1,21 +1,70 @@
 import React, { useState } from "react";
 import { 
   Warehouse, Search, Filter, Plus, Mail, User, MapPin, 
-  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders, RefreshCw, AlertCircle
+  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders, RefreshCw, AlertCircle, Trash2
 } from "lucide-react";
 import { WarehouseItem } from "../data/dashboardData";
 import { useWarehouses } from "../hooks/useWarehouses";
+import { useAuth } from "../context/AuthContext";
 
 interface WarehousesSectionProps {
-  onShowToast: (msg: string, type?: "success" | "info") => void;
+  onShowToast: (msg: string, type?: "success" | "info" | "warning" | "error") => void;
   onOpenModal: (modalName: string) => void;
+  activeModal?: string | null;
+  onCloseModal?: () => void;
 }
 
-export default function WarehousesSection({ onShowToast, onOpenModal }: WarehousesSectionProps) {
-  const { warehouses, setWarehouses, loading, error, refreshWarehouses } = useWarehouses();
+export default function WarehousesSection({ onShowToast, onOpenModal, activeModal, onCloseModal }: WarehousesSectionProps) {
+  const { permissions } = useAuth();
+  const { warehouses, setWarehouses, loading, error, refreshWarehouses, addWarehouse, updateWarehouse, deleteWarehouse } = useWarehouses();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingWarehouseId, setEditingWarehouseId] = useState<string | null>(null);
+
+  const showAddModal = isAddModalOpen || activeModal === "addWarehouse";
+
+  const initialFormState = { name: "", location: "", totalAreaSqFt: 0 };
+  const [formData, setFormData] = useState(initialFormState);
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name) return onShowToast("Please enter a warehouse name", "error");
+    try {
+      await addWarehouse(formData as any);
+      onShowToast(`Successfully added warehouse ${formData.name}!`, "success");
+      setIsAddModalOpen(false);
+      onCloseModal?.();
+      setFormData(initialFormState);
+    } catch (err: any) {
+      onShowToast(`Failed to add warehouse: ${err.message}`, "error");
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWarehouseId) return;
+    try {
+      await updateWarehouse(editingWarehouseId, formData as any);
+      onShowToast(`Successfully updated warehouse ${formData.name}!`, "success");
+      setIsEditModalOpen(false);
+      setEditingWarehouseId(null);
+      setFormData(initialFormState);
+    } catch (err: any) {
+      onShowToast(`Failed to update warehouse: ${err.message}`, "error");
+    }
+  };
+
+  const closeModal = () => {
+    setIsAddModalOpen(false);
+    setIsEditModalOpen(false);
+    onCloseModal?.();
+    setEditingWarehouseId(null);
+    setFormData(initialFormState);
+  };
 
   const filteredWarehouses = warehouses.filter(wh => {
     const matchesSearch = 
@@ -26,9 +75,35 @@ export default function WarehousesSection({ onShowToast, onOpenModal }: Warehous
     return matchesSearch && matchesStatus;
   });
 
-  const handleUpdateStatus = (id: string, newStatus: any) => {
-    setWarehouses(warehouses.map(wh => wh.id === id ? { ...wh, status: newStatus } : wh));
-    onShowToast(`Updated Warehouse status to ${newStatus}`, "success");
+  const handleUpdateStatus = async (id: string, newStatus: any) => {
+    try {
+      await updateWarehouse(id, { status: newStatus });
+      onShowToast(`Updated Warehouse status to ${newStatus}`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to update status: ${err.message}`, "error");
+    }
+    setActiveMenuId(null);
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      await deleteWarehouse(id);
+      onShowToast(`Deleted ${name} from warehouses.`, "success");
+    } catch (err: any) {
+      console.error("[handleDelete] Caught error:", err);
+      onShowToast(`Failed to delete warehouse: ${err.message}`, "error");
+    }
+    setActiveMenuId(null);
+  };
+
+  const handleEditClick = (wh: WarehouseItem) => {
+    setFormData({
+      name: wh.name,
+      location: wh.location,
+      totalAreaSqFt: wh.totalAreaSqFt
+    });
+    setEditingWarehouseId(wh.id);
+    setIsEditModalOpen(true);
     setActiveMenuId(null);
   };
 
@@ -49,13 +124,18 @@ export default function WarehousesSection({ onShowToast, onOpenModal }: Warehous
           </h1>
           <p className="text-xs text-slate-500 mt-1">Monitor real-time storage capacities, physical layouts, and site manager logs.</p>
         </div>
-        <button
-          onClick={() => onOpenModal("addWarehouse")}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Warehouse Hub</span>
-        </button>
+        {permissions?.canManageWarehouses && (
+          <button
+            onClick={() => {
+              setFormData(initialFormState);
+              setIsAddModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Warehouse Hub</span>
+          </button>
+        )}
       </div>
 
       {/* Filters Bar */}
@@ -170,42 +250,59 @@ export default function WarehousesSection({ onShowToast, onOpenModal }: Warehous
                   <h3 className="text-sm font-bold text-white tracking-tight">{wh.name}</h3>
                 </div>
 
-                <div className="relative">
-                  <button 
-                    onClick={() => setActiveMenuId(activeMenuId === wh.id ? null : wh.id)}
-                    className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900/60 transition-colors cursor-pointer"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
+                  {permissions?.canManageWarehouses && (
+                    <div className="relative">
+                      <button 
+                        onClick={() => setActiveMenuId(activeMenuId === wh.id ? null : wh.id)}
+                        className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900/60 transition-colors cursor-pointer"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
 
-                  {activeMenuId === wh.id && (
-                    <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                      <button
-                        onClick={() => handleOptimizeLayout(wh.name)}
-                        className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                      >
-                        <Sliders className="w-3.5 h-3.5 text-indigo-400" />
-                        <span>Optimize Layout</span>
-                      </button>
-                      <div className="h-px bg-slate-900 my-1" />
-                      <button
-                        onClick={() => handleUpdateStatus(wh.id, "Active")}
-                        className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Set Active</span>
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(wh.id, "At Capacity")}
-                        className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                      >
-                        <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                        <span>Set At Capacity</span>
-                      </button>
+                      {activeMenuId === wh.id && (
+                        <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                          <button
+                            onClick={() => handleOptimizeLayout(wh.name)}
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                          >
+                            <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+                            <span>Optimize Layout</span>
+                          </button>
+                          <div className="h-px bg-slate-900 my-1" />
+                          <button
+                            onClick={() => handleUpdateStatus(wh.id, "Active")}
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Set Active</span>
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(wh.id, "At Capacity")}
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                          >
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Set At Capacity</span>
+                          </button>
+                          <div className="h-px bg-slate-900 my-1" />
+                          <button
+                            onClick={() => handleEditClick(wh)}
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                            <span>Edit Warehouse</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(wh.id, wh.name)}
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-rose-500/10 hover:text-rose-400 flex items-center gap-1.5"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Delete Facility</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              </div>
 
               {/* Gauge Progress bar */}
               <div className="space-y-1.5">
@@ -251,6 +348,43 @@ export default function WarehousesSection({ onShowToast, onOpenModal }: Warehous
           </div>
         )}
       </div>
+
+      {/* Add / Edit Modal */}
+      {(showAddModal || isEditModalOpen) && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative w-full max-w-md bg-[#050914] border border-slate-900 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
+                <Warehouse className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-sm font-bold text-white">{isEditModalOpen ? "Edit Warehouse Facility" : "Add Physical Warehouse Facility"}</h3>
+              </div>
+              <div className="space-y-3 text-xs">
+                <div className="space-y-1.5">
+                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Warehouse Name</label>
+                  <input required type="text" placeholder="e.g. Frankfurt Storage Hub" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Geographic Territory</label>
+                    <input required type="text" placeholder="e.g. Germany" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Total Sq Ft (Capacity)</label>
+                    <input required type="number" placeholder="e.g. 100000" min="0" value={formData.totalAreaSqFt || ''} onChange={e => setFormData({ ...formData, totalAreaSqFt: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button type="button" onClick={closeModal} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
+                <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer">
+                  {isEditModalOpen ? "Save Changes" : "Confirm Storage Hub"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

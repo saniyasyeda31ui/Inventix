@@ -25,8 +25,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 // .env.local (local dev) or the hosting platform's environment config.
 // ---------------------------------------------------------------------------
 
-const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
+const supabaseAnonKey = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || supabaseUrl === 'https://your-project-ref.supabase.co') {
   throw new Error(

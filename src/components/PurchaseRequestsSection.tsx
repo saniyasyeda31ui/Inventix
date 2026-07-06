@@ -1,45 +1,152 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ShoppingBag, Search, Filter, Plus, FileSpreadsheet, ThumbsUp, 
-  ThumbsDown, ChevronLeft, ChevronRight, RefreshCw, MoreVertical, Send, AlertCircle
+  ThumbsDown, ChevronLeft, ChevronRight, RefreshCw, MoreVertical, Send, AlertCircle, Edit2, Trash2, X
 } from "lucide-react";
 import { PurchaseRequest } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
 import { usePurchaseRequests } from "../hooks/usePurchaseRequests";
+import { useProducts } from "../hooks/useProducts";
+import { useAuth } from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PurchaseRequestsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
   onOpenModal: (modalName: string) => void;
+  activeModal?: string | null;
+  onCloseModal?: () => void;
 }
 
-export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: PurchaseRequestsSectionProps) {
-  const { purchaseRequests: requests, setPurchaseRequests: setRequests, loading, error, refreshPurchaseRequests } = usePurchaseRequests();
+export default function PurchaseRequestsSection({ onShowToast, onOpenModal, activeModal, onCloseModal }: PurchaseRequestsSectionProps) {
+  const { permissions } = useAuth();
+  const { purchaseRequests: requests, loading, error, refreshPurchaseRequests, addPurchaseRequest, updatePurchaseRequest, deletePurchaseRequest } = usePurchaseRequests();
+  const { products } = useProducts();
   const [search, setSearch] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
+  // Modal State handling
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRequest, setEditingRequest] = useState<PurchaseRequest | null>(null);
+
+  useEffect(() => {
+    if (activeModal === "createRequest") {
+      setIsModalOpen(true);
+      setEditingRequest(null);
+      setFormData({
+        product_id: "",
+        item: "",
+        quantity: 1,
+        estimated_cost: 0,
+        department: "Operations",
+        supplier: "Global Plastics Corp",
+        priority: "Medium",
+        expectedDelivery: new Date().toISOString().split('T')[0]
+      });
+      if (onCloseModal) onCloseModal();
+    }
+  }, [activeModal, onCloseModal]);
+
+  const [formData, setFormData] = useState<Partial<PurchaseRequest>>({
+    product_id: "",
+    item: "",
+    quantity: 1,
+    estimated_cost: 0,
+    department: "Operations",
+    supplier: "Global Plastics Corp",
+    priority: "Medium",
+    expectedDelivery: new Date().toISOString().split('T')[0]
+  });
+
+  const openAddModal = () => {
+    setFormData({
+      product_id: "",
+      item: "",
+      quantity: 1,
+      estimated_cost: 0,
+      department: "Operations",
+      supplier: "Global Plastics Corp",
+      priority: "Medium",
+      expectedDelivery: new Date().toISOString().split('T')[0]
+    });
+    setEditingRequest(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (req: PurchaseRequest) => {
+    setFormData({
+      product_id: req.product_id || "",
+      item: req.item || "",
+      quantity: req.quantity || 1,
+      estimated_cost: req.estimated_cost || 0,
+      department: req.department || "Operations",
+      supplier: req.supplier || "Global Plastics Corp",
+      priority: req.priority as any || "Medium",
+      expectedDelivery: req.expectedDelivery || ""
+    });
+    setEditingRequest(req);
+    setIsModalOpen(true);
+    setActiveMenuId(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    setActiveMenuId(null);
+    if (!window.confirm("Are you sure you want to delete this purchase request?")) return;
+    try {
+      await deletePurchaseRequest(id);
+      onShowToast("Purchase request deleted", "success");
+    } catch (err: any) {
+      onShowToast(`Failed to delete: ${err.message}`, "info");
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    setActiveMenuId(null);
+    try {
+      await updatePurchaseRequest(id, { status: "Approved" });
+      onShowToast(`Approved Purchase Request ${id}`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to approve: ${err.message}`, "info");
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setActiveMenuId(null);
+    try {
+      await updatePurchaseRequest(id, { status: "Rejected" });
+      onShowToast(`Rejected Purchase Request ${id}`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to reject: ${err.message}`, "info");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.product_id) {
+      onShowToast("Please select a product", "info");
+      return;
+    }
+    try {
+      const selectedProduct = products.find(p => p.id === formData.product_id);
+      const submitData = { ...formData, item: selectedProduct ? selectedProduct.name : formData.item };
+
+      if (editingRequest) {
+        await updatePurchaseRequest(editingRequest.id, submitData);
+        onShowToast("Purchase request updated", "success");
+      } else {
+        await addPurchaseRequest(submitData);
+        onShowToast("Purchase request created", "success");
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      onShowToast(`Error: ${err.message}`, "info");
+    }
+  };
+
   const itemsPerPage = 5;
 
-  const handleApprove = (id: string) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: "Approved" } : r));
-    onShowToast(`Approved Purchase Request ${id}`, "success");
-    setActiveMenuId(null);
-  };
-
-  const handleReject = (id: string) => {
-    setRequests(requests.map(r => r.id === id ? { ...r, status: "Rejected" } : r));
-    onShowToast(`Rejected Purchase Request ${id}`, "success");
-    setActiveMenuId(null);
-  };
-
-  const handleSendRFP = (id: string, supplier: string) => {
-    onShowToast(`Sent Request for Proposal (RFP) to ${supplier} for request ${id}`, "success");
-    setActiveMenuId(null);
-  };
-
-  // Filters
   const filteredRequests = requests.filter(r => {
     const matchesSearch = 
       r.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,7 +160,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
     return matchesSearch && matchesPriority && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage) || 1;
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / itemsPerPage));
   const paginatedRequests = filteredRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
@@ -68,13 +175,15 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
           </h1>
           <p className="text-xs text-slate-500 mt-1">Review internal acquisition requests, department requisitions, and priority-level authorizations.</p>
         </div>
-        <button
-          onClick={() => onOpenModal("createRequest")}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Acquisition Request</span>
-        </button>
+        {permissions?.canManagePurchaseRequests && (
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Acquisition Request</span>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -98,75 +207,49 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
         {/* Multi-Selectors */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Priority</span>
+            <Filter className="w-3.5 h-3.5 text-slate-500 hidden sm:block" />
             <select
               value={priorityFilter}
-              onChange={(e) => {
-                setPriorityFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+              onChange={(e) => { setPriorityFilter(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-950/50 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
             >
               <option value="All">All Priorities</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
               <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
             </select>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Approval State</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Pending">Pending Approval</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
+          
+          <select
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-950/50 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
 
           <button 
-            onClick={() => {
-              setSearch("");
-              setPriorityFilter("All");
-              setStatusFilter("All");
-              setCurrentPage(1);
-              refreshPurchaseRequests();
-              onShowToast("Filters reset and requests refreshed.", "info");
-            }}
-            className="p-1.5 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs ml-auto transition-colors"
-            title="Reset Filters & Refresh"
+            onClick={refreshPurchaseRequests} 
+            className="p-2 rounded-xl border border-slate-900 bg-slate-950/50 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+            title="Refresh Data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Error Banner */}
       {error && (
-        <div className="flex items-start gap-2.5 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm text-rose-400 animate-slideIn">
-          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-          <div className="flex flex-col">
-            <span className="font-semibold text-rose-300">Data Fetch Error</span>
-            <span className="leading-relaxed mt-1 text-xs">{error}</span>
-            <button 
-              onClick={refreshPurchaseRequests} 
-              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
-            >
-              Retry Connection
-            </button>
-          </div>
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-400 text-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p>{error}</p>
         </div>
       )}
 
-      {/* Requests Table */}
+      {/* Main Table View */}
       <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -179,7 +262,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
                 <th className="py-3 px-4">Amount</th>
                 <th className="py-3 px-4 text-center">Priority</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                {permissions?.canManagePurchaseRequests && <th className="py-3 px-4 text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -199,7 +282,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded mx-auto" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                    {permissions?.canManagePurchaseRequests && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : paginatedRequests.length > 0 ? (
@@ -209,7 +292,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
                     className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
                   >
                     <td className="py-3.5 px-4 font-mono text-slate-400 font-semibold">{r.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{r.item}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-200">{r.item} <span className="text-slate-500 font-normal ml-1">x{r.quantity || 1}</span></td>
                     <td className="py-3.5 px-4">
                       <span className="text-slate-300 block">{r.requestedBy}</span>
                       <span className="text-[10px] text-slate-500 block">{r.department}</span>
@@ -240,48 +323,57 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
                         {r.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="relative inline-block text-left">
-                        <button 
-                          onClick={() => setActiveMenuId(activeMenuId === r.id ? null : r.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {activeMenuId === r.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                            <button
-                              onClick={() => handleApprove(r.id)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
-                              <span>Approve Request</span>
-                            </button>
-                            <button
-                              onClick={() => handleReject(r.id)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <ThumbsDown className="w-3.5 h-3.5 text-rose-500" />
-                              <span>Reject Request</span>
-                            </button>
-                            <div className="h-px bg-slate-900 my-1" />
-                            <button
-                              onClick={() => handleSendRFP(r.id, r.supplier)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Send className="w-3.5 h-3.5 text-indigo-400" />
-                              <span>Send Supplier RFP</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                    {permissions?.canManagePurchaseRequests && (
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === r.id ? null : r.id)}
+                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenuId === r.id && (
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                              <button
+                                onClick={() => openEditModal(r)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Edit Request</span>
+                              </button>
+                              <button
+                                onClick={() => handleApprove(r.id)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Approve Request</span>
+                              </button>
+                              <button
+                                onClick={() => handleReject(r.id)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <ThumbsDown className="w-3.5 h-3.5 text-amber-500" />
+                                <span>Reject Request</span>
+                              </button>
+                              <div className="h-px bg-slate-900 my-1" />
+                              <button
+                                onClick={() => handleDelete(r.id)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Request</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-500">
+                  <td colSpan={8} className="py-8 text-center text-slate-500 text-xs">
                     No acquisition requests matched your criteria.
                   </td>
                 </tr>
@@ -313,6 +405,158 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal }: Pu
           </div>
         </div>
       </div>
+
+      {/* CRUD Modal for Purchase Requests */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" 
+              onClick={() => setIsModalOpen(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 280 }}
+              className="relative w-full max-w-lg bg-[#040815] border border-slate-900 rounded-2xl shadow-2xl p-6 overflow-hidden"
+            >
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-900">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-sm font-bold text-white">
+                      {editingRequest ? "Edit Purchase Request" : "Create Purchase Request"}
+                    </h3>
+                  </div>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requested Product</label>
+                    <select 
+                      required
+                      value={formData.product_id}
+                      onChange={e => setFormData({ ...formData, product_id: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="">Select a Product</option>
+                      {products.map(p => (
+                        <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Quantity</label>
+                      <input 
+                        required
+                        type="number"
+                        min="1"
+                        value={formData.quantity}
+                        onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Estimated Cost ($)</label>
+                      <input 
+                        required
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={formData.estimated_cost}
+                        onChange={e => setFormData({ ...formData, estimated_cost: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Target Supplier</label>
+                      <select 
+                        value={formData.supplier}
+                        onChange={e => setFormData({ ...formData, supplier: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      >
+                        <option value="Global Plastics Corp">Global Plastics Corp</option>
+                        <option value="Intel Sourcing">Intel Sourcing</option>
+                        <option value="SteelWorks Ltd">SteelWorks Ltd</option>
+                        <option value="Belgrave Chemicals">Belgrave Chemicals</option>
+                        <option value="Valves & Fittings Inc">Valves & Fittings Inc</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requisition Priority</label>
+                      <select 
+                        value={formData.priority}
+                        onChange={e => setFormData({ ...formData, priority: e.target.value as any })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Department Name</label>
+                      <select 
+                        value={formData.department}
+                        onChange={e => setFormData({ ...formData, department: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      >
+                        <option value="Procurement">Procurement</option>
+                        <option value="Operations">Operations</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Logistics">Logistics</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Expected Delivery Target</label>
+                      <input 
+                        type="date" 
+                        value={formData.expectedDelivery}
+                        onChange={e => setFormData({ ...formData, expectedDelivery: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
+                  >
+                    {editingRequest ? "Save Changes" : "File Purchase Request"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

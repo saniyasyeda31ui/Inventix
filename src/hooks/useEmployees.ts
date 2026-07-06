@@ -19,8 +19,6 @@ export function useEmployees() {
       setLoading(true);
       setError(null);
 
-      // We explicitly map the self-referencing manager_id for good measure,
-      // even though the UI doesn't explicitly display the manager right now.
       const { data, error: fetchError } = await supabase
         .from('employees')
         .select(`
@@ -43,12 +41,14 @@ export function useEmployees() {
 
       const mappedEmployees: EmployeeItem[] = (data || []).map((row: any) => {
         return {
-          id: `EMP-${row.id.split('-')[0].toUpperCase()}`, // Create a sleek short reference ID
+          id: `EMP-${row.id.split('-')[0].toUpperCase()}`,
+          uuid: row.id,
           name: row.full_name,
           email: row.work_email,
           role: row.title,
           department: row.department,
           status: row.status,
+          manager_id: row.manager_id
         };
       });
 
@@ -61,6 +61,97 @@ export function useEmployees() {
     }
   }, []);
 
+  const addEmployee = async (employeeData: any) => {
+    const tempUuid = crypto.randomUUID();
+    const tempEmp = `EMP-${tempUuid.split('-')[0].toUpperCase()}`;
+    
+    const dbPayload = {
+      full_name: employeeData.name,
+      work_email: employeeData.email,
+      department: employeeData.department || 'Operations',
+      title: employeeData.role || 'Staff',
+      status: employeeData.status || 'Active',
+      manager_id: employeeData.manager_id || null,
+    };
+
+    const optimisticEmployee: EmployeeItem = {
+      id: tempEmp,
+      uuid: tempUuid,
+      name: dbPayload.full_name,
+      email: dbPayload.work_email,
+      role: dbPayload.title,
+      department: dbPayload.department,
+      status: dbPayload.status as any,
+      manager_id: dbPayload.manager_id
+    };
+
+    setEmployees(prev => [optimisticEmployee, ...prev]);
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from('employees')
+        .insert([dbPayload])
+        .select('id')
+        .single();
+
+      if (insertError) throw new Error(insertError.message);
+      
+      setEmployees(prev => prev.map(e => e.id === tempEmp ? { ...e, uuid: data.id } : e));
+    } catch (err: any) {
+      setEmployees(prev => prev.filter(e => e.id !== tempEmp));
+      throw err;
+    }
+  };
+
+  const updateEmployee = async (id: string, updates: any) => {
+    const employeeToUpdate = employees.find(e => e.id === id || e.uuid === id);
+    if (!employeeToUpdate || !employeeToUpdate.uuid) throw new Error("Employee not found or missing UUID");
+
+    const previousEmployees = [...employees];
+    const optimisticUpdated = { ...employeeToUpdate, ...updates };
+    setEmployees(prev => prev.map(e => e.uuid === employeeToUpdate.uuid ? optimisticUpdated : e));
+
+    try {
+      const dbPayload: any = {};
+      if (updates.name !== undefined) dbPayload.full_name = updates.name;
+      if (updates.email !== undefined) dbPayload.work_email = updates.email;
+      if (updates.department !== undefined) dbPayload.department = updates.department;
+      if (updates.role !== undefined) dbPayload.title = updates.role;
+      if (updates.status !== undefined) dbPayload.status = updates.status;
+      if (updates.manager_id !== undefined) dbPayload.manager_id = updates.manager_id;
+
+      const { error: updateError } = await supabase
+        .from('employees')
+        .update(dbPayload)
+        .eq('id', employeeToUpdate.uuid);
+
+      if (updateError) throw new Error(updateError.message);
+    } catch (err: any) {
+      setEmployees(previousEmployees);
+      throw err;
+    }
+  };
+
+  const deleteEmployee = async (id: string) => {
+    const employeeToDelete = employees.find(e => e.id === id || e.uuid === id);
+    if (!employeeToDelete || !employeeToDelete.uuid) throw new Error("Employee not found or missing UUID");
+
+    const previousEmployees = [...employees];
+    setEmployees(prev => prev.filter(e => e.uuid !== employeeToDelete.uuid));
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', employeeToDelete.uuid);
+
+      if (deleteError) throw new Error(deleteError.message);
+    } catch (err: any) {
+      setEmployees(previousEmployees);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
@@ -70,6 +161,9 @@ export function useEmployees() {
     loading,
     error,
     refreshEmployees: fetchEmployees,
-    setEmployees // For optimistic UI updates
+    setEmployees,
+    addEmployee,
+    updateEmployee,
+    deleteEmployee
   };
 }

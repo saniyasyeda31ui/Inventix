@@ -74,8 +74,6 @@ const liveStock = await Inventix.getInventoryStatus({
   sku: "STAINLESS-STEEL-A",
   locations: ["WH-MIDWEST-02", "WH-EAST-01"]
 });
-console.log(\`Current Total Stock: \${liveStock.totalOnHand} units\`);
-console.log(\`Reserved for active shipments: \${liveStock.reserved} units\`);
 // Alert State: NORMAL (inventory levels are healthy)`,
         actionText: "Setup 4: Oversee inventory counts and active movements live"
       }
@@ -91,8 +89,6 @@ const aiInsights = await Inventix.getProcurementInsights({
   targetSKU: "STAINLESS-STEEL-A",
   historicalRunwaysDays: 90
 });
-console.log(\`AI suggestion: Purchase from Supplier 'Nippon Sourcing'\`);
-console.log(\`Estimated savings: $14,250 based on current spot-price discounts\`);
 // INSIGHT READY: Purchase Stainless Steel. Spot prices are down 6%.`,
         actionText: "Setup 5: Translate historical inventory patterns into cash savings"
       }

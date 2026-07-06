@@ -1,22 +1,154 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   FileText, Search, Filter, Plus, Printer, Mail, MoreVertical, 
-  Trash2, RefreshCw, Eye, Send, CheckCircle2, AlertCircle
+  Trash2, RefreshCw, Eye, Send, CheckCircle2, AlertCircle, Edit2, X
 } from "lucide-react";
-import { PurchaseOrder } from "../data/dashboardData";
+import { PurchaseOrder, PurchaseRequest, VendorItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
 import { usePurchaseOrders } from "../hooks/usePurchaseOrders";
+import { useVendors } from "../hooks/useVendors";
+import { usePurchaseRequests } from "../hooks/usePurchaseRequests";
+import { useAuth } from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PurchaseOrdersSectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
-  onOpenModal: (modalName: string) => void;
+  activeModal?: string | null;
+  onCloseModal?: () => void;
 }
 
-export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: PurchaseOrdersSectionProps) {
-  const { purchaseOrders: orders, setPurchaseOrders: setOrders, loading, error, refreshPurchaseOrders } = usePurchaseOrders();
+export default function PurchaseOrdersSection({ onShowToast, activeModal, onCloseModal }: PurchaseOrdersSectionProps) {
+  const { permissions } = useAuth();
+  const { purchaseOrders: orders, loading, error, refreshPurchaseOrders, addPurchaseOrder, updatePurchaseOrder, deletePurchaseOrder } = usePurchaseOrders();
+  const { vendors } = useVendors();
+  const { purchaseRequests } = usePurchaseRequests();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+
+  const [formData, setFormData] = useState<Partial<PurchaseOrder>>({
+    vendor_id: "",
+    purchase_request_id: "",
+    total_amount: 0,
+    itemsCount: 0,
+    deliveryDate: new Date().toISOString().split('T')[0],
+    status: "Draft"
+  });
+
+  useEffect(() => {
+    if (activeModal === "createOrder") {
+      openAddModal();
+      if (onCloseModal) onCloseModal();
+    }
+  }, [activeModal, onCloseModal]);
+
+  const openAddModal = () => {
+    setFormData({
+      vendor_id: "",
+      purchase_request_id: "",
+      total_amount: 0,
+      itemsCount: 0,
+      deliveryDate: new Date().toISOString().split('T')[0],
+      status: "Draft"
+    });
+    setEditingOrder(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (o: PurchaseOrder) => {
+    setFormData({
+      vendor_id: o.vendor_id || "",
+      purchase_request_id: o.purchase_request_id || "",
+      total_amount: o.total_amount || 0,
+      itemsCount: o.itemsCount || 0,
+      deliveryDate: o.deliveryDate === '-' ? '' : o.deliveryDate,
+      status: o.status
+    });
+    setEditingOrder(o);
+    setIsModalOpen(true);
+    setActiveMenuId(null);
+  };
+
+  const handlePRChange = (prId: string) => {
+    if (!prId) {
+      setFormData(prev => ({ ...prev, purchase_request_id: "" }));
+      return;
+    }
+    
+    const pr = purchaseRequests.find(r => r.id === prId);
+    if (pr) {
+      let matchVendorId = "";
+      if (pr.supplier) {
+        const v = vendors.find(ven => ven.name.toLowerCase() === pr.supplier.toLowerCase());
+        if (v) matchVendorId = v.uuid || v.id;
+      }
+      
+      const parsedAmount = typeof pr.amount === 'string' 
+        ? parseFloat(pr.amount.replace(/[^0-9.-]+/g,""))
+        : (pr.amount as number) || 0;
+
+      setFormData(prev => ({
+        ...prev,
+        purchase_request_id: pr.id,
+        vendor_id: matchVendorId || prev.vendor_id,
+        total_amount: parsedAmount || prev.total_amount,
+        itemsCount: (pr as any).quantity || 1,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, purchase_request_id: prId }));
+    }
+  };
+
+  const handleDelete = async (uuid: string) => {
+    setActiveMenuId(null);
+    if (!window.confirm("Are you sure you want to delete this purchase order?")) return;
+    try {
+      await deletePurchaseOrder(uuid);
+      onShowToast("Purchase order deleted", "success");
+    } catch (err: any) {
+      onShowToast(`Failed to delete: ${err.message}`, "info");
+    }
+  };
+
+  const handleUpdateStatus = async (uuid: string, status: string) => {
+    setActiveMenuId(null);
+    try {
+      await updatePurchaseOrder(uuid, { status: status as any });
+      onShowToast(`Purchase order status updated to ${status}`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to update status: ${err.message}`, "info");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.vendor_id) {
+      onShowToast("Please select a vendor", "info");
+      return;
+    }
+    try {
+      const selectedVendor = vendors.find(v => v.uuid === formData.vendor_id || v.id === formData.vendor_id);
+      const submitData = { 
+        ...formData, 
+        vendorName: selectedVendor ? selectedVendor.name : "Unknown Vendor" 
+      };
+
+      if (editingOrder && editingOrder.uuid) {
+        await updatePurchaseOrder(editingOrder.uuid, submitData);
+        onShowToast("Purchase order updated", "success");
+      } else {
+        await addPurchaseOrder(submitData);
+        onShowToast("Purchase order created", "success");
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      onShowToast(`Error: ${err.message}`, "info");
+    }
+  };
 
   const filteredOrders = orders.filter(o => {
     const matchesSearch = 
@@ -26,18 +158,6 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
     const matchesStatus = statusFilter === "All" || o.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  const handleUpdateStatus = (id: string, newStatus: any) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
-    onShowToast(`Purchase order ${id} is now ${newStatus}`, "success");
-    setActiveMenuId(null);
-  };
-
-  const handleDispatchOrder = (id: string, vendor: string) => {
-    onShowToast(`Formally dispatched Purchase Order ${id} to ${vendor} via secure electronic EDI connection.`, "success");
-    setOrders(orders.map(o => o.id === id ? { ...o, status: "Sent" } : o));
-    setActiveMenuId(null);
-  };
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -51,13 +171,15 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
           </h1>
           <p className="text-xs text-slate-500 mt-1">Legally binding acquisition drafts, dispatched procurement contracts, and delivery arrival manifests.</p>
         </div>
-        <button
-          onClick={() => onOpenModal("createPO")}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Purchase Order</span>
-        </button>
+        {permissions?.canManagePurchaseOrders && (
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Purchase Order</span>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -81,26 +203,23 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-950/50 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
           >
-            <option value="All">All Purchase Orders</option>
+            <option value="All">All Statuses</option>
             <option value="Draft">Draft</option>
             <option value="Pending Approval">Pending Approval</option>
-            <option value="Sent">Sent (Awaiting Delivery)</option>
+            <option value="Sent">Sent</option>
+            <option value="Partially Received">Partially Received</option>
+            <option value="Received">Received</option>
             <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
-          
           <button 
-            onClick={() => {
-              setSearch("");
-              setStatusFilter("All");
-              refreshPurchaseOrders();
-              onShowToast("Filters reset and orders refreshed.", "info");
-            }}
-            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
-            title="Reset Filters & Refresh"
+            onClick={refreshPurchaseOrders}
+            className="p-2 rounded-xl border border-slate-900 bg-slate-950/50 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer ml-2"
+            title="Refresh Data"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
           </button>
         </div>
       </div>
@@ -112,12 +231,6 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
           <div className="flex flex-col">
             <span className="font-semibold text-rose-300">Data Fetch Error</span>
             <span className="leading-relaxed mt-1 text-xs">{error}</span>
-            <button 
-              onClick={refreshPurchaseOrders} 
-              className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
-            >
-              Retry Connection
-            </button>
           </div>
         </div>
       )}
@@ -136,7 +249,7 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
                 <th className="py-3 px-4 text-right">Total Cost</th>
                 <th className="py-3 px-4">Authorized Buyer</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                {permissions?.canManagePurchaseOrders && <th className="py-3 px-4 text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -152,7 +265,7 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded ml-auto" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                    {permissions?.canManagePurchaseOrders && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : filteredOrders.length > 0 ? (
@@ -172,9 +285,9 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
                     <td className="py-3.5 px-4 text-slate-400">{o.buyer}</td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
-                        o.status === "Completed" 
+                        o.status === "Completed"
                           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
-                          : o.status === "Sent"
+                          : o.status === "Sent" || o.status === "Partially Received"
                             ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/10"
                             : o.status === "Pending Approval"
                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
@@ -183,46 +296,52 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
                         {o.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="relative inline-block text-left">
-                        <button 
-                          onClick={() => setActiveMenuId(activeMenuId === o.id ? null : o.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {activeMenuId === o.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                            <button
-                              onClick={() => handleDispatchOrder(o.id, o.vendorName)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Send className="w-3.5 h-3.5 text-indigo-400" />
-                              <span>Dispatch PO</span>
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(o.id, "Completed")}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                              <span>Mark Received</span>
-                            </button>
-                            <div className="h-px bg-slate-900 my-1" />
-                            <button
-                              onClick={() => {
-                                onShowToast(`Generated printer-friendly PDF copy of PO ${o.id}`, "success");
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-400 hover:bg-slate-900 flex items-center gap-1.5"
-                            >
-                              <Printer className="w-3.5 h-3.5 text-slate-400" />
-                              <span>Print PO Document</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                    {permissions?.canManagePurchaseOrders && (
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === o.id ? null : o.id)}
+                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenuId === o.id && (
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                              <button
+                                onClick={() => openEditModal(o)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Edit PO</span>
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(o.uuid!, "Sent")}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Send className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Dispatch PO</span>
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus(o.uuid!, "Completed")}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Mark Received</span>
+                              </button>
+                              <div className="h-px bg-slate-900 my-1" />
+                              <button
+                                onClick={() => handleDelete(o.uuid!)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete PO</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
@@ -236,6 +355,144 @@ export default function PurchaseOrdersSection({ onShowToast, onOpenModal }: Purc
           </table>
         </div>
       </div>
+
+      {/* CRUD Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" 
+              onClick={() => setIsModalOpen(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 280 }}
+              className="relative w-full max-w-lg bg-[#040815] border border-slate-900 rounded-2xl shadow-2xl p-6 overflow-hidden"
+            >
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-900">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-sm font-bold text-white">
+                      {editingOrder ? `Edit Purchase Order (${editingOrder.id})` : "Create Purchase Order"}
+                    </h3>
+                  </div>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-300">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Link Purchase Request (Optional)</label>
+                    <select 
+                      value={formData.purchase_request_id}
+                      onChange={e => handlePRChange(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="">-- No linked request --</option>
+                      {purchaseRequests.map(pr => (
+                        <option key={pr.id} value={pr.id}>{pr.id} ({pr.item})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Vendor</label>
+                    <select 
+                      required
+                      value={formData.vendor_id}
+                      onChange={e => setFormData({ ...formData, vendor_id: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="">Select a Vendor</option>
+                      {vendors.map(v => (
+                        <option key={v.id} value={v.uuid || v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Total Amount ($)</label>
+                      <input 
+                        required
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={formData.total_amount}
+                        onChange={e => setFormData({ ...formData, total_amount: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Total Items Count</label>
+                      <input 
+                        required
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formData.itemsCount}
+                        onChange={e => setFormData({ ...formData, itemsCount: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Status</label>
+                      <select 
+                        value={formData.status}
+                        onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      >
+                        <option value="Draft">Draft</option>
+                        <option value="Pending Approval">Pending Approval</option>
+                        <option value="Sent">Sent</option>
+                        <option value="Partially Received">Partially Received</option>
+                        <option value="Received">Received</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Promised Delivery Date</label>
+                      <input 
+                        type="date" 
+                        value={formData.deliveryDate}
+                        onChange={e => setFormData({ ...formData, deliveryDate: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
+                  >
+                    {editingOrder ? "Save Changes" : "Create Purchase Order"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -636,6 +636,10 @@ create policy "warehouses: admins and managers can update"
   on public.warehouses for update to authenticated
   using (public.is_admin_or_manager());
 
+create policy "warehouses: admins and managers can delete"
+  on public.warehouses for delete to authenticated
+  using (public.is_admin_or_manager());
+
 
 -- ---------------------------------------------------------------------------
 -- INVENTORY BALANCES

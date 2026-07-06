@@ -1,18 +1,27 @@
 import React, { useState } from "react";
 import { 
   Sliders, Search, Filter, RefreshCw, ChevronLeft, ChevronRight, 
-  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle
+  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle, Trash2
 } from "lucide-react";
 import { LiveStockItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
 import { useInventory } from "../hooks/useInventory";
+import { useProducts } from "../hooks/useProducts";
+import { useWarehouses } from "../hooks/useWarehouses";
+import { X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface InventorySectionProps {
-  onShowToast: (msg: string, type?: "success" | "info") => void;
+  onShowToast: (msg: string, type?: "success" | "info" | "error" | "warning") => void;
+  activeModal?: string | null;
+  onCloseModal?: () => void;
 }
 
-export default function InventorySection({ onShowToast }: InventorySectionProps) {
-  const { inventory: stock, setInventory: setStock, loading, error, refreshInventory } = useInventory();
+export default function InventorySection({ onShowToast, activeModal, onCloseModal }: InventorySectionProps) {
+  const { permissions } = useAuth();
+  const { inventory: stock, setInventory: setStock, loading, error, refreshInventory, addInventory, updateInventory, deleteInventory } = useInventory();
+  const { products } = useProducts();
+  const { warehouses: warehouseData } = useWarehouses();
   const [search, setSearch] = useState("");
   const [warehouseFilter, setWarehouseFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -34,19 +43,56 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
     setActiveMenuId(null);
   };
 
-  const handleStockAdjustment = (id: string, delta: number) => {
-    setStock(stock.map(item => {
-      if (item.id === id) {
-        const nextQty = Math.max(0, item.qty + delta);
-        let nextStatus: "Optimal" | "Low Stock" | "Critical" | "Transit" = "Optimal";
-        if (nextQty < 1000) nextStatus = "Critical";
-        else if (nextQty < 5000) nextStatus = "Low Stock";
-        return { ...item, qty: nextQty, status: nextStatus };
-      }
-      return item;
-    }));
-    onShowToast(`Adjusted stock levels by ${delta > 0 ? "+" : ""}${delta} units.`, "success");
+  const handleStockAdjustment = async (id: string, currentQty: number, delta: number) => {
+    try {
+      const newQty = Math.max(0, currentQty + delta);
+      await updateInventory(id, { on_hand_qty: newQty });
+      onShowToast(`Adjusted stock levels by ${delta > 0 ? "+" : ""}${delta} units.`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to adjust stock: ${err.message}`, "error");
+    }
     setActiveMenuId(null);
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      await deleteInventory(id);
+      onShowToast(`Deleted inventory record for ${name}.`, "success");
+    } catch (err: any) {
+      onShowToast(`Failed to delete inventory: ${err.message}`, "error");
+    }
+    setActiveMenuId(null);
+  };
+
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const showReceiveModal = isReceiveModalOpen || activeModal === "receiveStock";
+
+  const initialFormState = {
+    productId: "",
+    warehouseId: "",
+    qtyToAdd: 0,
+    safetyStockQty: 50
+  };
+  const [formData, setFormData] = useState(initialFormState);
+
+  const closeModal = () => {
+    setIsReceiveModalOpen(false);
+    setFormData(initialFormState);
+    onCloseModal?.();
+  };
+
+  const handleReceiveSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.productId || !formData.warehouseId) {
+      return onShowToast("Please select both a product and a warehouse.", "error");
+    }
+    try {
+      await addInventory(formData.productId, formData.warehouseId, formData.qtyToAdd, formData.safetyStockQty);
+      onShowToast(`Successfully received ${formData.qtyToAdd} units!`, "success");
+      closeModal();
+    } catch (err: any) {
+      onShowToast(`Failed to receive stock: ${err.message}`, "error");
+    }
   };
 
   // Filter & Paginate
@@ -77,6 +123,18 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
           </h1>
           <p className="text-xs text-slate-500 mt-1">Real-time counts, safety stock safety thresholds, and physical warehouse bin storage coordinates.</p>
         </div>
+        {permissions?.canManageInventory && (
+          <button
+            onClick={() => {
+              setFormData(initialFormState);
+              setIsReceiveModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer transition-colors shrink-0"
+          >
+            <Package className="w-4 h-4" />
+            <span>Receive Stock</span>
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -173,7 +231,7 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
                 <th className="py-3 px-4">Warehouse Facility</th>
                 <th className="py-3 px-4">Category/Sector</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                {permissions?.canManageInventory && <th className="py-3 px-4 text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -187,7 +245,7 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>
+                    {permissions?.canManageInventory && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : paginatedStock.length > 0 ? (
@@ -217,42 +275,51 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
                         {item.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block text-left">
-                        <button 
-                          onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {activeMenuId === item.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                            <button
-                              onClick={() => handleAuditPassed(item.id, item.name)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                              <span>Audit Passed</span>
-                            </button>
-                            <button
-                              onClick={() => handleStockAdjustment(item.id, 500)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <Package className="w-3.5 h-3.5 text-indigo-400" />
-                              <span>Adjust Stock (+500)</span>
-                            </button>
-                            <button
-                              onClick={() => handleStockAdjustment(item.id, -500)}
-                              className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
-                            >
-                              <ArrowRightLeft className="w-3.5 h-3.5 text-rose-400" />
-                              <span>Adjust Stock (-500)</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+                    {permissions?.canManageInventory && (
+                      <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
+                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {activeMenuId === item.id && (
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                              <button
+                                onClick={() => handleAuditPassed(item.id, item.name)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                <span>Audit Passed</span>
+                              </button>
+                              <button
+                                onClick={() => handleStockAdjustment(item.id, item.qty, 500)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <Package className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Adjust Stock (+500)</span>
+                              </button>
+                              <button
+                                onClick={() => handleStockAdjustment(item.id, item.qty, -500)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                              >
+                                <ArrowRightLeft className="w-3.5 h-3.5 text-rose-400" />
+                                <span>Adjust Stock (-500)</span>
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id, item.name)}
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 mt-1 border-t border-slate-900/50"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Record</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
@@ -290,6 +357,101 @@ export default function InventorySection({ onShowToast }: InventorySectionProps)
         </div>
       </div>
 
+      {/* Receive Stock Modal */}
+      {showReceiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative w-full max-w-lg bg-[#050914] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
+            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                  <Package className="w-4 h-4 text-indigo-400" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-white">Receive Stock</h2>
+                  <p className="text-[10px] text-slate-400">Add or adjust inventory balances.</p>
+                </div>
+              </div>
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-slate-900 text-slate-400 hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleReceiveSubmit} className="p-6 space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Product / Material</label>
+                  <select
+                    required
+                    value={formData.productId}
+                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="" disabled>Select a product...</option>
+                    {products.map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Destination Warehouse</label>
+                  <select
+                    required
+                    value={formData.warehouseId}
+                    onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="" disabled>Select a warehouse facility...</option>
+                    {warehouseData.map(w => (
+                      <option key={w.uuid || w.id} value={w.uuid || w.id}>{w.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Quantity to Receive</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={formData.qtyToAdd}
+                      onChange={(e) => setFormData({ ...formData, qtyToAdd: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Safety Stock Threshold</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={formData.safetyStockQty}
+                      onChange={(e) => setFormData({ ...formData, safetyStockQty: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800 mt-6">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                >
+                  Process Receipt
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

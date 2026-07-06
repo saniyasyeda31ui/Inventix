@@ -30,6 +30,7 @@ import React, {
 } from 'react';
 import type { Session, User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { AppRole, Permissions, mapDatabaseRoleToAppRole, rolePermissions } from '../lib/rbac';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,13 +39,13 @@ import { supabase } from '../lib/supabase';
 /**
  * Mirrors the public.profiles table row.
  * Role values must match the CHECK constraint in the database schema:
- *   check (role in ('viewer', 'sourcing_admin', 'manager'))
+ *   check (role in ('admin', 'procurement_manager', 'inventory_manager', 'warehouse_manager', 'finance_manager', 'viewer'))
  */
 export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  role: 'viewer' | 'sourcing_admin' | 'manager';
+  role: AppRole | 'sourcing_admin' | 'manager'; // Legacy roles included for backwards compatibility
   organization: string;
   updated_at: string;
   created_at: string;
@@ -56,6 +57,10 @@ interface AuthContextValue {
   user: User | null;
   /** The user's row from public.profiles. null while loading or signed out. */
   profile: UserProfile | null;
+  /** The frontend application role derived from the database profile. */
+  role: AppRole | null;
+  /** The mapped permissions for the current frontend role. */
+  permissions: Permissions | null;
   /**
    * True while the initial session check is in flight.
    * Use this to render a full-screen skeleton rather than flashing the login page.
@@ -90,6 +95,8 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [role, setRole] = useState<AppRole | null>(null);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
   // Start as true — we don't know the auth state yet on first render.
   const [loading, setLoading] = useState(true);
 
@@ -111,8 +118,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // on first signup). Log the error but don't crash — profile will be null.
       console.warn('[AuthContext] Could not fetch profile:', error.message);
       setProfile(null);
+      setRole(null);
+      setPermissions(null);
     } else {
-      setProfile(data as UserProfile);
+      const userProfile = data as UserProfile;
+      setProfile(userProfile);
+      
+      // Determine frontend role and permissions
+      const appRole = mapDatabaseRoleToAppRole(userProfile.role, userProfile.email);
+      setRole(appRole);
+      setPermissions(rolePermissions[appRole]);
     }
   }, []);
 
@@ -156,6 +171,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // User signed out — clear all state.
         setUser(null);
         setProfile(null);
+        setRole(null);
+        setPermissions(null);
       }
       // After the first INITIAL_SESSION event resolves, loading should be false.
       setLoading(false);
@@ -194,6 +211,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextValue = {
     user,
     profile,
+    role,
+    permissions,
     loading,
     signIn,
     signOut,

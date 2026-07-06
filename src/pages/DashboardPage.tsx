@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Warehouse, Package, Users, Receipt, 
   BarChart2, Bell, LogOut, ArrowUpRight, 
   Settings, AlertTriangle, DollarSign, Activity, FileText,
-  Search, Plus, CheckCircle, Clock, XCircle, AlertCircle, Filter, 
+  Search, Plus, CheckCircle, Clock, XCircle, AlertCircle, Filter, ShieldAlert,
   ChevronLeft, ChevronRight, Info, Sparkles, TrendingUp, Sun, Moon, 
   X, Check, FileSpreadsheet, Building2, CreditCard, Layers,
   ShoppingBag, Truck, Calendar, Sliders, Menu
@@ -12,33 +12,32 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import SkeletonLoader from "../components/SkeletonLoader";
 
-import {
-  initialPurchaseRequests,
-  initialRecentActivities,
-  initialLiveStock,
-  PurchaseRequest,
-  Activity as LogActivity,
-  LiveStockItem
-} from "../data/dashboardData";
+
 
 // Modular Section Imports
 import OverviewSection from "../components/OverviewSection";
 import ProductsSection from "../components/ProductsSection";
 import WarehousesSection from "../components/WarehousesSection";
 import InventorySection from "../components/InventorySection";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import VendorsSection from "../components/VendorsSection";
 import PurchaseRequestsSection from "../components/PurchaseRequestsSection";
+import { usePurchaseRequests } from "../hooks/usePurchaseRequests";
 import PurchaseOrdersSection from "../components/PurchaseOrdersSection";
 import ReportsSection from "../components/ReportsSection";
 import AIInsightsSection from "../components/AIInsightsSection";
 import CompanySection from "../components/CompanySection";
 import EmployeesSection from "../components/EmployeesSection";
+import UserManagementSection from "../components/UserManagementSection";
 import PaymentsSection from "../components/PaymentsSection";
 import SettingsSection from "../components/SettingsSection";
 import { useNotifications } from '../hooks/useNotifications';
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user, profile, role, permissions, signOut } = useAuth();
+
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   
@@ -49,9 +48,8 @@ export default function DashboardPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Real-time states
-  const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>(initialPurchaseRequests);
-  const [recentActivities, setRecentActivities] = useState<LogActivity[]>(initialRecentActivities);
-  const [liveStock, setLiveStock] = useState<LiveStockItem[]>(initialLiveStock);
+  const { purchaseRequests } = usePurchaseRequests();
+
   const [activeAlerts, setActiveAlerts] = useState([
     { id: 1, message: "Silicon-Wafers (Singapore Warehouse) low on stock. Current: 4,200 / Min: 5,000", type: "warning" },
     { id: 2, message: "Purchase Order PO-12095 created and sent to Intel Sourcing", type: "info" }
@@ -93,14 +91,7 @@ export default function DashboardPage() {
   // Modals state
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  // Form Fields
-  const [newProduct, setNewProduct] = useState({ name: "", sku: "", sector: "Bulk Materials", qty: 1000, warehouse: "Chicago Warehouse" });
-  const [newRequest, setNewRequest] = useState({ item: "", requestedBy: "Alexander S.", department: "Procurement", supplier: "Global Plastics Corp", priority: "Medium" as const, amount: "5000", expectedDelivery: "2026-07-15" });
-  const [newVendor, setNewVendor] = useState({ name: "", category: "Metals", onTime: "95.0%", status: "Approved" });
-  const [newWarehouse, setNewWarehouse] = useState({ name: "", location: "Texas Hub", capacity: 80 });
-  const [receiveProductSku, setReceiveProductSku] = useState("");
-  const [receiveProductQty, setReceiveProductQty] = useState(500);
-  const [reportType, setReportType] = useState("Inventory Value Summary");
+
 
   useEffect(() => {
     const updateTimeAndDate = () => {
@@ -122,7 +113,8 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, [activeTab]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     navigate("/");
   };
 
@@ -142,110 +134,7 @@ export default function DashboardPage() {
     setActiveModal(modalName);
   };
 
-  // Quick Action: Add Product Submit
-  const handleAddProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProduct.name || !newProduct.sku) {
-      showToast("Please fill out all product fields", "info");
-      return;
-    }
-    const item: LiveStockItem = {
-      id: "STK-" + (100 + liveStock.length + 1),
-      name: newProduct.name,
-      sku: newProduct.sku,
-      sector: newProduct.sector,
-      qty: Number(newProduct.qty),
-      warehouse: newProduct.warehouse,
-      status: Number(newProduct.qty) < 2000 ? "Low Stock" : "Optimal"
-    };
-    setLiveStock([item, ...liveStock]);
-    
-    // Log Activity
-    const log: LogActivity = {
-      id: Date.now(),
-      action: `Product ${newProduct.name} registered`,
-      type: "success",
-      timestamp: "Just now",
-      details: `Added ${newProduct.qty} units to ${newProduct.warehouse}`
-    };
-    setRecentActivities([log, ...recentActivities]);
-    
-    showToast(`Successfully registered ${newProduct.name}!`, "success");
-    setActiveModal(null);
-    setNewProduct({ name: "", sku: "", sector: "Bulk Materials", qty: 1000, warehouse: "Chicago Warehouse" });
-  };
 
-  // Quick Action: Add Purchase Request
-  const handleAddRequest = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRequest.item || !newRequest.amount) {
-      showToast("Please fill out all request fields", "info");
-      return;
-    }
-    const item: PurchaseRequest = {
-      id: `PR-2026-00${purchaseRequests.length + 1}`,
-      requestedBy: newRequest.requestedBy,
-      department: newRequest.department,
-      supplier: newRequest.supplier,
-      expectedDelivery: newRequest.expectedDelivery,
-      priority: newRequest.priority,
-      status: "Pending",
-      amount: "$" + Number(newRequest.amount).toLocaleString(),
-      item: newRequest.item
-    };
-    setPurchaseRequests([item, ...purchaseRequests]);
-
-    // Log Activity
-    const log: LogActivity = {
-      id: Date.now(),
-      action: `Purchase request ${item.id} created`,
-      type: "info",
-      timestamp: "Just now",
-      details: `${newRequest.item} worth $${Number(newRequest.amount).toLocaleString()} requested by ${newRequest.requestedBy}`
-    };
-    setRecentActivities([log, ...recentActivities]);
-
-    showToast(`Created purchase request ${item.id} for ${newRequest.item}`, "success");
-    setActiveModal(null);
-    setNewRequest({ item: "", requestedBy: "Alexander S.", department: "Procurement", supplier: "Global Plastics Corp", priority: "Medium", amount: "5000", expectedDelivery: "2026-07-15" });
-  };
-
-  // Quick Action: Receive Stock
-  const handleReceiveStockSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!receiveProductSku) {
-      showToast("Please specify a stock item to receive", "info");
-      return;
-    }
-    const updated = liveStock.map(item => {
-      if (item.sku === receiveProductSku) {
-        const newQty = item.qty + Number(receiveProductQty);
-        return {
-          ...item,
-          qty: newQty,
-          status: (newQty < 2000 ? "Low Stock" : "Optimal") as any
-        };
-      }
-      return item;
-    });
-    setLiveStock(updated);
-
-    const match = liveStock.find(i => i.sku === receiveProductSku);
-    const prodName = match ? match.name : receiveProductSku;
-
-    const log: LogActivity = {
-      id: Date.now(),
-      action: `Received delivery for ${prodName}`,
-      type: "success",
-      timestamp: "Just now",
-      details: `Added ${receiveProductQty} units of stock via receiving slip.`
-    };
-    setRecentActivities([log, ...recentActivities]);
-
-    showToast(`Successfully received ${receiveProductQty} units for SKU ${receiveProductSku}!`, "success");
-    setActiveModal(null);
-    setReceiveProductSku("");
-  };
 
   const toggleTheme = () => {
     const newTheme = themeMode === "slate" ? "charcoal" : "slate";
@@ -253,7 +142,23 @@ export default function DashboardPage() {
     showToast(`Workspace backdrop toggled to ${newTheme === "slate" ? "Slate Midnight" : "Charcoal Black"}.`, "info");
   };
 
-  // markAllAsRead is now provided by useNotifications hook
+  const renderAccessDenied = () => (
+    <div className="p-12 text-center border border-slate-900 rounded-2xl bg-[#040815] space-y-4 flex flex-col items-center justify-center min-h-[400px]">
+      <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20 mb-2">
+        <AlertTriangle className="w-8 h-8 text-rose-500" />
+      </div>
+      <h3 className="text-xl font-bold text-slate-200">Access Denied</h3>
+      <p className="text-sm text-slate-500 max-w-md">
+        Your current role (<span className="text-indigo-400 capitalize">{role?.replace('_', ' ')}</span>) does not have permission to view the {activeTab} module.
+      </p>
+      <button 
+        onClick={() => setActiveTab("Overview")}
+        className="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-colors"
+      >
+        Return to Overview
+      </button>
+    </div>
+  );
 
   // Render Section dynamically based on active tab
   const renderActiveSection = () => {
@@ -261,10 +166,6 @@ export default function DashboardPage() {
       case "Overview":
         return (
           <OverviewSection
-            liveStock={liveStock}
-            purchaseRequests={purchaseRequests}
-            recentActivities={recentActivities}
-            activeAlerts={activeAlerts}
             onDismissAlert={handleDismissAlert}
             onOpenModal={handleOpenModal}
             onTabChange={(tab) => {
@@ -274,28 +175,59 @@ export default function DashboardPage() {
           />
         );
       case "Products":
-        return <ProductsSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessProducts) return renderAccessDenied();
+        return <ProductsSection onShowToast={showToast} onOpenModal={handleOpenModal} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />;
       case "Warehouses":
-        return <WarehousesSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessWarehouses) return renderAccessDenied();
+        return <WarehousesSection onShowToast={showToast} onOpenModal={handleOpenModal} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />;
       case "Inventory":
-        return <InventorySection onShowToast={showToast} />;
+        if (!permissions?.canAccessInventory) return renderAccessDenied();
+        return (
+          <ErrorBoundary>
+            <InventorySection onShowToast={showToast} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />
+          </ErrorBoundary>
+        );
       case "Vendors":
-        return <VendorsSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessVendors) return renderAccessDenied();
+        return <VendorsSection onShowToast={showToast} onOpenModal={handleOpenModal} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />;
       case "Purchase Requests":
-        return <PurchaseRequestsSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessPurchaseRequests) return renderAccessDenied();
+        return <PurchaseRequestsSection onShowToast={showToast} onOpenModal={handleOpenModal} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />;
       case "Purchase Orders":
-        return <PurchaseOrdersSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessPurchaseOrders) return renderAccessDenied();
+        return <PurchaseOrdersSection onShowToast={showToast} activeModal={activeModal} onCloseModal={() => setActiveModal(null)} />;
       case "Reports":
+        if (!permissions?.canAccessReports) return renderAccessDenied();
         return <ReportsSection onShowToast={showToast} />;
       case "AI Insights":
+        if (!permissions?.canAccessAIInsights) return renderAccessDenied();
         return <AIInsightsSection onShowToast={showToast} />;
       case "Company":
+        if (!permissions?.canAccessEmployees) return renderAccessDenied();
         return <CompanySection onShowToast={showToast} />;
       case "Employees":
-        return <EmployeesSection onShowToast={showToast} onOpenModal={handleOpenModal} />;
+        if (!permissions?.canAccessEmployees) return renderAccessDenied();
+        return (
+          <ErrorBoundary>
+            <EmployeesSection activeModal={activeModal} onCloseModal={() => setActiveModal(null)} onShowToast={showToast} />
+          </ErrorBoundary>
+        );
+      case "User Management":
+        if (role !== 'admin') return renderAccessDenied();
+        return (
+          <ErrorBoundary>
+            <UserManagementSection onShowToast={showToast} />
+          </ErrorBoundary>
+        );
       case "Payments":
-        return <PaymentsSection onShowToast={showToast} />;
+        if (!permissions?.canAccessPayments) return renderAccessDenied();
+        return (
+          <ErrorBoundary>
+            <PaymentsSection activeModal={activeModal} onCloseModal={() => setActiveModal(null)} onShowToast={showToast} />
+          </ErrorBoundary>
+        );
       case "Settings":
+        if (!permissions?.canAccessEmployees) return renderAccessDenied();
         return <SettingsSection onShowToast={showToast} />;
       default:
         return (
@@ -308,46 +240,54 @@ export default function DashboardPage() {
   };
 
   // Sidebar Menu Config
-  const sidebarMenu = [
+  const baseSidebarMenu = [
     {
       category: "Dashboard",
       items: [
-        { name: "Overview", icon: LayoutDashboard }
+        { name: "Overview", icon: LayoutDashboard } as any
       ]
     },
     {
       category: "Inventory",
       items: [
-        { name: "Products", icon: Package },
-        { name: "Warehouses", icon: Warehouse },
-        { name: "Inventory", icon: Sliders }
+        { name: "Products", icon: Package, permission: permissions?.canAccessProducts },
+        { name: "Warehouses", icon: Warehouse, permission: permissions?.canAccessWarehouses },
+        { name: "Inventory", icon: Sliders, permission: permissions?.canAccessInventory }
       ]
     },
     {
       category: "Procurement",
       items: [
-        { name: "Vendors", icon: Users },
-        { name: "Purchase Requests", icon: ShoppingBag },
-        { name: "Purchase Orders", icon: Receipt }
+        { name: "Vendors", icon: Users, permission: permissions?.canAccessVendors },
+        { name: "Purchase Requests", icon: ShoppingBag, permission: permissions?.canAccessPurchaseRequests },
+        { name: "Purchase Orders", icon: Receipt, permission: permissions?.canAccessPurchaseOrders }
       ]
     },
     {
       category: "Analytics",
       items: [
-        { name: "Reports", icon: FileText },
-        { name: "AI Insights", icon: Sparkles }
+        { name: "Reports", icon: FileText, permission: permissions?.canAccessReports },
+        { name: "AI Insights", icon: Sparkles, permission: permissions?.canAccessAIInsights }
       ]
     },
     {
       category: "Administration",
       items: [
-        { name: "Company", icon: Building2 },
-        { name: "Employees", icon: Users },
-        { name: "Payments", icon: CreditCard },
-        { name: "Settings", icon: Settings }
+        { name: "Company", icon: Building2, permission: permissions?.canAccessEmployees }, // Assuming company is grouped with employees
+        { name: "Employees", icon: Users, permission: permissions?.canAccessEmployees },
+        { name: "User Management", icon: ShieldAlert, permission: role === 'admin' },
+        { name: "Payments", icon: CreditCard, permission: permissions?.canAccessPayments },
+        { name: "Settings", icon: Settings, permission: permissions?.canAccessEmployees } // Grouping settings with admin privileges
       ]
     }
   ];
+
+  // Filter sidebar based on RBAC permissions
+  const sidebarMenu = baseSidebarMenu.map(category => ({
+    ...category,
+    items: category.items.filter(item => item.permission !== false) // Default to true for Overview
+  })).filter(category => category.items.length > 0);
+
 
   return (
     <div className={`h-screen flex flex-col font-sans overflow-hidden transition-colors duration-300 ${
@@ -865,487 +805,7 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* GLOBAL DIALOG MODAL SYSTEM */}
-      <AnimatePresence>
-        {activeModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" 
-              onClick={() => setActiveModal(null)} 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="relative w-full max-w-lg bg-[#040815] border border-slate-900 rounded-2xl shadow-2xl p-6 overflow-hidden"
-            >
-            
-            {/* Modal close icon button */}
-            <button 
-              onClick={() => setActiveModal(null)}
-              className="absolute right-4 top-4 p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 text-slate-500 hover:text-white hover:border-slate-800 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
 
-            {/* Modal: Add Product */}
-            {activeModal === "addProduct" && (
-              <form onSubmit={handleAddProduct} className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <Package className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Register Product SKU</h3>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Product Description Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Copper Tubing (Grade-X)"
-                      value={newProduct.name}
-                      onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Custom Sourcing SKU</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. COP-TUB-X500" 
-                        value={newProduct.sku}
-                        onChange={e => setNewProduct({ ...newProduct, sku: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Material Category Sector</label>
-                      <select 
-                        value={newProduct.sector}
-                        onChange={e => setNewProduct({ ...newProduct, sector: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Bulk Materials">Bulk Materials</option>
-                        <option value="Semiconductors">Semiconductors</option>
-                        <option value="Energy Cells">Energy Cells</option>
-                        <option value="Plastics">Plastics</option>
-                        <option value="Components">Components</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Initial Quantity Registered</label>
-                      <input 
-                        type="number" 
-                        value={newProduct.qty}
-                        onChange={e => setNewProduct({ ...newProduct, qty: Number(e.target.value) })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Destination Warehouse Hub</label>
-                      <select 
-                        value={newProduct.warehouse}
-                        onChange={e => setNewProduct({ ...newProduct, warehouse: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Chicago Warehouse">Chicago Warehouse</option>
-                        <option value="Rotterdam Warehouse">Rotterdam Warehouse</option>
-                        <option value="Singapore Warehouse">Singapore Warehouse</option>
-                        <option value="Bangalore Warehouse">Bangalore Warehouse</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
-                  <button 
-                    type="button" 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 bg-transparent hover:bg-slate-900 text-slate-400 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
-                  >
-                    Register Product
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Modal: Add Vendor */}
-            {activeModal === "addVendor" && (
-              <div className="space-y-4 text-xs">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <Users className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Register Corporate Supplier</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Vendor Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Apex Sourcing Co."
-                      value={newVendor.name}
-                      onChange={e => setNewVendor({ ...newVendor, name: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Material Category</label>
-                      <select 
-                        value={newVendor.category}
-                        onChange={e => setNewVendor({ ...newVendor, category: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Metals">Metals</option>
-                        <option value="Semiconductors">Semiconductors</option>
-                        <option value="Plastics">Plastics</option>
-                        <option value="Energy Cells">Energy Cells</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">SLA Compliance Target</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. 95.0%" 
-                        value={newVendor.onTime}
-                        onChange={e => setNewVendor({ ...newVendor, onTime: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={() => {
-                      if (!newVendor.name) return;
-                      showToast(`Vendor ${newVendor.name} registered on approved panel!`, "success");
-                      
-                      const log: LogActivity = {
-                        id: Date.now(),
-                        action: `Supplier ${newVendor.name} enrolled`,
-                        type: "info",
-                        timestamp: "Just now",
-                        details: `Registered as approved supplier for ${newVendor.category} with ${newVendor.onTime} SLA compliance.`
-                      };
-                      setRecentActivities([log, ...recentActivities]);
-                      setActiveModal(null);
-                      setNewVendor({ name: "", category: "Metals", onTime: "95.0%", status: "Approved" });
-                    }}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold cursor-pointer"
-                  >
-                    Register Vendor
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Modal: Add Warehouse */}
-            {activeModal === "addWarehouse" && (
-              <div className="space-y-4 text-xs">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <Warehouse className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Add Physical Warehouse Facility</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Warehouse Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Frankfurt Storage Hub"
-                      value={newWarehouse.name}
-                      onChange={e => setNewWarehouse({ ...newWarehouse, name: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Geographic Territory</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Germany" 
-                        value={newWarehouse.location}
-                        onChange={e => setNewWarehouse({ ...newWarehouse, location: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Total Sq Ft (Capacity)</label>
-                      <input 
-                        type="number" 
-                        placeholder="e.g. 100000" 
-                        value={newWarehouse.capacity}
-                        onChange={e => setNewWarehouse({ ...newWarehouse, capacity: Number(e.target.value) })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={() => {
-                      if (!newWarehouse.name) return;
-                      showToast(`Warehouse facility ${newWarehouse.name} established!`, "success");
-                      
-                      const log: LogActivity = {
-                        id: Date.now(),
-                        action: `Warehouse ${newWarehouse.name} activated`,
-                        type: "success",
-                        timestamp: "Just now",
-                        details: `Added new physical storage partition in ${newWarehouse.location} capacity limit verified.`
-                      };
-                      setRecentActivities([log, ...recentActivities]);
-                      setActiveModal(null);
-                      setNewWarehouse({ name: "", location: "Texas Hub", capacity: 80 });
-                    }}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold cursor-pointer"
-                  >
-                    Confirm Storage Hub
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Modal: Create Purchase Request */}
-            {activeModal === "createRequest" && (
-              <form onSubmit={handleAddRequest} className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <ShoppingBag className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Create Purchase Requisition Slip</h3>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requested Material / Item</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Copper Tubing Grade-X"
-                      value={newRequest.item}
-                      onChange={e => setNewRequest({ ...newRequest, item: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Target Supplier</label>
-                      <select 
-                        value={newRequest.supplier}
-                        onChange={e => setNewRequest({ ...newRequest, supplier: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Global Plastics Corp">Global Plastics Corp</option>
-                        <option value="Intel Sourcing">Intel Sourcing</option>
-                        <option value="SteelWorks Ltd">SteelWorks Ltd</option>
-                        <option value="Belgrave Chemicals">Belgrave Chemicals</option>
-                        <option value="Valves & Fittings Inc">Valves & Fittings Inc</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requisition Priority</label>
-                      <select 
-                        value={newRequest.priority}
-                        onChange={e => setNewRequest({ ...newRequest, priority: e.target.value as any })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Critical">Critical</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requisition Budget Amount ($)</label>
-                      <input 
-                        type="number" 
-                        value={newRequest.amount}
-                        onChange={e => setNewRequest({ ...newRequest, amount: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Department Name</label>
-                      <select 
-                        value={newRequest.department}
-                        onChange={e => setNewRequest({ ...newRequest, department: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                      >
-                        <option value="Procurement">Procurement</option>
-                        <option value="Operations">Operations</option>
-                        <option value="Engineering">Engineering</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Logistics">Logistics</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Expected Delivery Target</label>
-                    <input 
-                      type="date" 
-                      value={newRequest.expectedDelivery}
-                      onChange={e => setNewRequest({ ...newRequest, expectedDelivery: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
-                  <button 
-                    type="button" 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
-                  >
-                    File Purchase Request
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Modal: Receive Stock */}
-            {activeModal === "receiveStock" && (
-              <form onSubmit={handleReceiveStockSubmit} className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <Truck className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Receive Stock Inbound Slip</h3>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Select Stock Item (SKU)</label>
-                    <select 
-                      value={receiveProductSku}
-                      onChange={e => setReceiveProductSku(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="">-- Choose Stock Item --</option>
-                      {liveStock.map(item => (
-                        <option key={item.sku} value={item.sku}>{item.name} ({item.sku})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Inbound Quantity Received</label>
-                    <input 
-                      type="number" 
-                      value={receiveProductQty}
-                      onChange={e => setReceiveProductQty(Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
-                  <button 
-                    type="button" 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
-                  >
-                    Commit Stock Slip
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Modal: Generate Report */}
-            {activeModal === "generateReport" && (
-              <div className="space-y-4 text-xs">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
-                  <FileSpreadsheet className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-sm font-bold text-white">Generate Operational ERP Report</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Select Report Type</label>
-                    <select 
-                      value={reportType}
-                      onChange={e => setReportType(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="Inventory Value Summary">Inventory Value Summary (CSV/PDF)</option>
-                      <option value="Vendor SLA Compliance Log">Vendor SLA Compliance Log</option>
-                      <option value="Active Purchase Orders Audit">Active Purchase Orders Audit</option>
-                      <option value="Warehouse Space Allocation Report">Warehouse Space Allocation Report</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="pt-2 flex items-center justify-end gap-2">
-                  <button 
-                    onClick={() => setActiveModal(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
-                  >
-                    Close
-                  </button>
-                  <button 
-                    onClick={() => {
-                      showToast(`Successfully compiled and downloaded "${reportType}"!`, "success");
-                      
-                      const log: LogActivity = {
-                        id: Date.now(),
-                        action: `ERP Report Compiled`,
-                        type: "success",
-                        timestamp: "Just now",
-                        details: `Generated analytical worksheet for ${reportType}. Download ready.`
-                      };
-                      setRecentActivities([log, ...recentActivities]);
-                      setActiveModal(null);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold cursor-pointer"
-                  >
-                    Compile & Export Data
-                  </button>
-                </div>
-              </div>
-            )}
-
-          </motion.div>
-        </div>
-      )}
-      </AnimatePresence>
 
     </div>
   );

@@ -33,7 +33,6 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
     }
   };
 
-  console.log('[AIInsightsSection] Rendering recs:', recs, 'loading:', loading);
 
   return (
     <motion.div 

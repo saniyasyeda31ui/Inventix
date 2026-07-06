@@ -22,7 +22,7 @@ export function useAIRecommendations() {
         throw new Error(fetchError.message);
       }
 
-      console.log(`[useAIRecommendations] Supabase returned ${data?.length || 0} rows.`);
+
 
       const mappedData: AIRecommendation[] = (data || []).map((row) => {
         // Format estimated savings to match UI (e.g. "₹48,500/mo")
@@ -51,7 +51,7 @@ export function useAIRecommendations() {
         };
       });
 
-      console.log('[useAIRecommendations] Mapped objects:', mappedData);
+
 
       setRecommendations(mappedData);
     } catch (err: any) {
@@ -65,9 +65,9 @@ export function useAIRecommendations() {
   const executeRecommendation = async (id: string | number) => {
     try {
       // ── DIAGNOSTIC LOG 1: what id are we sending? ──────────────────────
-      console.log('[executeRecommendation] ▶ Sending UPDATE');
-      console.log('  id value :', id);
-      console.log('  id typeof:', typeof id);
+
+
+
 
       const { data, error: updateError, count, status, statusText } = await supabase
         .from('ai_recommendations')
@@ -77,11 +77,11 @@ export function useAIRecommendations() {
         .limit(5);                  // safety cap
 
       // ── DIAGNOSTIC LOG 2: full response ────────────────────────────────
-      console.log('[executeRecommendation] ◀ Supabase response');
-      console.log('  HTTP status :', status, statusText);
-      console.log('  error       :', updateError ?? null);
-      console.log('  data (rows) :', data);
-      console.log('  count       :', count);
+
+
+
+
+
 
       // ── DIAGNOSTIC LOG 3: interpret what happened ───────────────────────
       if (updateError) {
@@ -103,7 +103,7 @@ export function useAIRecommendations() {
         );
       }
 
-      console.log('[executeRecommendation] ✔ Updated', data.length, 'row(s):', data);
+
 
       // Refresh after confirmed update
       await fetchRecommendations();
