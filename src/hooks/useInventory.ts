@@ -26,7 +26,7 @@ export function useInventory() {
           on_hand_qty,
           safety_stock_qty,
           products (
-            name,
+            product_name,
             sku,
             category
           ),
@@ -52,7 +52,7 @@ export function useInventory() {
 
         return {
           id: row.id,
-          name: row.products?.name || 'Unknown Product',
+          name: row.products?.product_name || 'Unknown Product',
           sku: row.products?.sku || 'N/A',
           sector: row.products?.category || 'Uncategorized',
           qty: qty,
@@ -103,7 +103,7 @@ export function useInventory() {
           id,
           on_hand_qty,
           safety_stock_qty,
-          products ( name, sku, category ),
+          products ( product_name, sku, category ),
           warehouses ( name )
         `)
         .single();
@@ -122,7 +122,7 @@ export function useInventory() {
 
       const realItem: LiveStockItem = {
         id: data.id,
-        name: products.name || 'Unknown Product',
+        name: products.product_name || 'Unknown Product',
         sku: products.sku || 'N/A',
         sector: products.category || 'Uncategorized',
         qty: qty,

@@ -33,7 +33,7 @@ export function usePurchaseRequests() {
           status,
           estimated_cost,
           product_name,
-          products ( name ),
+          products ( product_name ),
           requestorProfile:profiles!requestor_id ( full_name )
         `)
         .order('created_at', { ascending: false });
@@ -51,7 +51,7 @@ export function usePurchaseRequests() {
           maximumFractionDigits: 0
         }).format(cost);
 
-        const itemName = row.products?.name || row.product_name || 'Unknown Item';
+        const itemName = row.products?.product_name || row.product_name || 'Unknown Item';
         const requestorName = row.requestorProfile?.full_name || row.requestor || 'Unknown Requestor';
 
         return {

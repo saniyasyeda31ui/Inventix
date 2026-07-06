@@ -21,24 +21,47 @@ export function useProducts() {
 
       const { data, error: fetchError } = await supabase
         .from('products')
-        .select('*')
-        .order('name'); // Sort alphabetically by default
+        .select(`
+          *,
+          vendors (name),
+          inventory_balances (on_hand_qty, safety_stock_qty)
+        `)
+        .order('product_name'); // Sort alphabetically by default
 
       if (fetchError) {
         throw new Error(fetchError.message);
       }
 
       // Map the database snake_case columns to the frontend camelCase interface
-      const mappedProducts: ProductItem[] = (data || []).map((row: any) => ({
-        id: row.id,
-        sku: row.sku,
-        name: row.name,
-        category: row.category,
-        unitPrice: Number(row.unit_price), // DB numeric comes back as string sometimes
-        leadTimeDays: row.lead_time_days,
-        primaryVendor: row.primary_vendor,
-        stockStatus: row.stock_status,
-      }));
+      const mappedProducts: ProductItem[] = (data || []).map((row: any) => {
+        let stockStatus = 'Out of Stock';
+        if (row.inventory_balances && row.inventory_balances.length > 0) {
+          const totalQty = row.inventory_balances.reduce((acc: number, ib: any) => acc + Number(ib.on_hand_qty || 0), 0);
+          const totalSafety = row.inventory_balances.reduce((acc: number, ib: any) => acc + Number(ib.safety_stock_qty || 0), 0);
+          
+          if (totalQty <= 0) {
+            stockStatus = 'Out of Stock';
+          } else if (totalQty <= totalSafety) {
+            stockStatus = 'Low Stock';
+          } else {
+            stockStatus = 'In Stock';
+          }
+        } else {
+          // Fallback if no inventory record
+          stockStatus = 'In Stock';
+        }
+
+        return {
+          id: row.id,
+          sku: row.sku,
+          name: row.product_name,
+          category: row.category,
+          unitPrice: Number(row.unit_price), // DB numeric comes back as string sometimes
+          leadTimeDays: row.lead_time_days,
+          primaryVendor: row.vendors?.name || row.vendor_id || 'Unknown',
+          stockStatus: stockStatus,
+        };
+      });
 
       setProducts(mappedProducts);
     } catch (err: any) {
@@ -59,12 +82,11 @@ export function useProducts() {
     const dbPayload = {
       id: newId,
       sku: productData.sku,
-      name: productData.name,
+      product_name: productData.name,
       category: productData.category,
       unit_price: productData.unitPrice,
       lead_time_days: productData.leadTimeDays,
-      primary_vendor: productData.primaryVendor,
-      stock_status: productData.stockStatus,
+      vendor_id: productData.primaryVendor,
     };
 
     console.log('[useProducts] CREATE Payload:', dbPayload);
@@ -88,12 +110,12 @@ export function useProducts() {
       ...p,
       id: data.id,
       sku: data.sku,
-      name: data.name,
+      name: data.product_name,
       category: data.category,
       unitPrice: Number(data.unit_price),
       leadTimeDays: data.lead_time_days,
-      primaryVendor: data.primary_vendor,
-      stockStatus: data.stock_status,
+      primaryVendor: data.vendors?.name || data.vendor_id || 'Unknown',
+      stockStatus: newProduct.stockStatus,
     } : p));
 
     return data;
@@ -105,12 +127,11 @@ export function useProducts() {
 
     const dbPayload: any = {};
     if (updates.sku !== undefined) dbPayload.sku = updates.sku;
-    if (updates.name !== undefined) dbPayload.name = updates.name;
+    if (updates.name !== undefined) dbPayload.product_name = updates.name;
     if (updates.category !== undefined) dbPayload.category = updates.category;
     if (updates.unitPrice !== undefined) dbPayload.unit_price = updates.unitPrice;
     if (updates.leadTimeDays !== undefined) dbPayload.lead_time_days = updates.leadTimeDays;
-    if (updates.primaryVendor !== undefined) dbPayload.primary_vendor = updates.primaryVendor;
-    if (updates.stockStatus !== undefined) dbPayload.stock_status = updates.stockStatus;
+    if (updates.primaryVendor !== undefined) dbPayload.vendor_id = updates.primaryVendor;
 
     console.log('[useProducts] UPDATE Payload:', dbPayload);
 
