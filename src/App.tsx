@@ -35,9 +35,8 @@ export default function App() {
               AUTH-REDIRECT ROUTES — redirect to /dashboard if already signed in.
               Prevents a logged-in user from landing on the login form.
           ---------------------------------------------------------------- */}
-          <Route element={<RouteGuard redirectIfAuth />}>
-            <Route path="/login" element={<LoginPage />} />
-          </Route>
+          {/* TEMPORARILY DISABLED redirectIfAuth so you can preview the login page while logged in */}
+          <Route path="/login" element={<LoginPage />} />
 
           {/* ----------------------------------------------------------------
               PROTECTED ROUTES — redirect to /login if not authenticated.

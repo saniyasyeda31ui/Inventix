@@ -169,7 +169,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-indigo-400" />
             <span>Purchase Requests Registry</span>
           </h1>
@@ -187,7 +187,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col xl:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col xl:flex-row gap-4 justify-between items-center">
         
         {/* Search */}
         <div className="relative w-full xl:w-80">
@@ -200,7 +200,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
 
@@ -211,7 +211,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
             <select
               value={priorityFilter}
               onChange={(e) => { setPriorityFilter(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-950/50 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
+              className="px-3 py-2 rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-xs text-slate-800 focus:outline-none focus:border-indigo-500/50"
             >
               <option value="All">All Priorities</option>
               <option value="Critical">Critical</option>
@@ -224,7 +224,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="px-3 py-2 rounded-xl border border-slate-900 bg-slate-950/50 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/50"
+            className="px-3 py-2 rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-xs text-slate-800 focus:outline-none focus:border-indigo-500/50"
           >
             <option value="All">All Statuses</option>
             <option value="Pending">Pending</option>
@@ -234,7 +234,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
 
           <button 
             onClick={refreshPurchaseRequests} 
-            className="p-2 rounded-xl border border-slate-900 bg-slate-950/50 text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+            className="p-2 rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-600 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
             title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
@@ -250,11 +250,11 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       )}
 
       {/* Main Table View */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-white/60 bg-white/40 backdrop-blur-md text-[10px] font-mono text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Request ID</th>
                 <th className="py-3 px-4">Requested Item</th>
                 <th className="py-3 px-4">Requester / Dept</th>
@@ -269,7 +269,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
               {loading ? (
                 // Loading Skeleton Rows
                 Array.from({ length: itemsPerPage }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                  <tr key={`skeleton-${i}`} className="border-b border-white/40">
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
                     <td className="py-4 px-4">
@@ -289,16 +289,16 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                 paginatedRequests.map((r) => (
                   <tr 
                     key={r.id}
-                    className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
+                    className="border-b border-white/50 hover:bg-white/40 backdrop-blur-md transition-all text-xs"
                   >
-                    <td className="py-3.5 px-4 font-mono text-slate-400 font-semibold">{r.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{r.item} <span className="text-slate-500 font-normal ml-1">x{r.quantity || 1}</span></td>
+                    <td className="py-3.5 px-4 font-mono text-slate-600 font-semibold">{r.id}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">{r.item} <span className="text-slate-500 font-normal ml-1">x{r.quantity || 1}</span></td>
                     <td className="py-3.5 px-4">
-                      <span className="text-slate-300 block">{r.requestedBy}</span>
+                      <span className="text-slate-800 block">{r.requestedBy}</span>
                       <span className="text-[10px] text-slate-500 block">{r.department}</span>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">{r.supplier}</td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-200">{r.amount}</td>
+                    <td className="py-3.5 px-4 text-slate-600">{r.supplier}</td>
+                    <td className="py-3.5 px-4 font-mono font-bold text-slate-900">{r.amount}</td>
                     <td className="py-3.5 px-4 text-center">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                         r.priority === "Critical" 
@@ -307,7 +307,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                             ? "bg-amber-500/10 text-amber-500 border border-amber-500/10"
                             : r.priority === "Medium"
                               ? "bg-indigo-500/10 text-indigo-500 border border-indigo-500/10"
-                              : "bg-slate-500/10 text-slate-400 border border-slate-500/10"
+                              : "bg-slate-500/10 text-slate-600 border border-slate-500/10"
                       }`}>
                         {r.priority}
                       </span>
@@ -328,30 +328,30 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === r.id ? null : r.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
                           {activeMenuId === r.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               <button
                                 onClick={() => openEditModal(r)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Edit Request</span>
                               </button>
                               <button
                                 onClick={() => handleApprove(r.id)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <ThumbsUp className="w-3.5 h-3.5 text-emerald-500" />
                                 <span>Approve Request</span>
                               </button>
                               <button
                                 onClick={() => handleReject(r.id)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <ThumbsDown className="w-3.5 h-3.5 text-amber-500" />
                                 <span>Reject Request</span>
@@ -383,7 +383,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/20 flex items-center justify-between">
+        <div className="p-4 border-t border-white/60 bg-white/40 backdrop-blur-md flex items-center justify-between">
           <span className="text-[10px] font-mono text-slate-500">
             Page {currentPage} of {totalPages}
           </span>
@@ -391,14 +391,14 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -414,7 +414,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" 
+              className="absolute inset-0 bg-white/60/80 backdrop-blur-md" 
               onClick={() => setIsModalOpen(false)} 
             />
             <motion.div 
@@ -422,29 +422,29 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="relative w-full max-w-lg bg-[#040815] border border-slate-900 rounded-2xl shadow-2xl p-6 overflow-hidden"
+              className="relative w-full max-w-lg bg-white/50 backdrop-blur-2xl border border-white/60 rounded-2xl shadow-2xl p-6 overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]"
             >
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-900">
+                <div className="flex items-center justify-between pb-3 border-b border-white/60">
                   <div className="flex items-center gap-2">
                     <ShoppingBag className="w-5 h-5 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">
+                    <h3 className="text-sm font-bold text-slate-900">
                       {editingRequest ? "Edit Purchase Request" : "Create Purchase Request"}
                     </h3>
                   </div>
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-300">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-800">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 <div className="space-y-3 text-xs">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requested Product</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Requested Product</label>
                     <select 
                       required
                       value={formData.product_id}
                       onChange={e => setFormData({ ...formData, product_id: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     >
                       <option value="">Select a Product</option>
                       {products.map(p => (
@@ -455,18 +455,18 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Quantity</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Quantity</label>
                       <input 
                         required
                         type="number"
                         min="1"
                         value={formData.quantity}
                         onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Estimated Cost ($)</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Estimated Cost ($)</label>
                       <input 
                         required
                         type="number"
@@ -474,18 +474,18 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         step="any"
                         value={formData.estimated_cost}
                         onChange={e => setFormData({ ...formData, estimated_cost: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Target Supplier</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Target Supplier</label>
                       <select 
                         value={formData.supplier}
                         onChange={e => setFormData({ ...formData, supplier: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       >
                         <option value="Global Plastics Corp">Global Plastics Corp</option>
                         <option value="Intel Sourcing">Intel Sourcing</option>
@@ -496,11 +496,11 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Requisition Priority</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Requisition Priority</label>
                       <select 
                         value={formData.priority}
                         onChange={e => setFormData({ ...formData, priority: e.target.value as any })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       >
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
@@ -512,11 +512,11 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Department Name</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Department Name</label>
                       <select 
                         value={formData.department}
                         onChange={e => setFormData({ ...formData, department: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       >
                         <option value="Procurement">Procurement</option>
                         <option value="Operations">Operations</option>
@@ -526,12 +526,12 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-slate-400 font-semibold uppercase tracking-wider block">Expected Delivery Target</label>
+                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Expected Delivery Target</label>
                       <input 
                         type="date" 
                         value={formData.expectedDelivery}
                         onChange={e => setFormData({ ...formData, expectedDelivery: e.target.value })}
-                        className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -541,7 +541,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                   <button 
                     type="button" 
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-slate-900 text-slate-400 cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-white/60 text-slate-600 cursor-pointer"
                   >
                     Cancel
                   </button>

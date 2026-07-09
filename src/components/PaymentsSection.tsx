@@ -159,7 +159,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-indigo-400" />
             <span>Sourcing Billing & Payments Ledger</span>
           </h1>
@@ -177,7 +177,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col md:flex-row gap-4 justify-between items-center">
         
         {/* Search */}
         <div className="relative w-full md:w-80">
@@ -187,7 +187,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
             placeholder="Search payment ID, invoice, or vendor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
 
@@ -197,7 +197,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+            className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
           >
             <option value="All">All Transactions</option>
             <option value="Paid">Paid</option>
@@ -214,7 +214,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
               refreshPurchaseOrders();
               onShowToast("Filters reset and payments refreshed.", "info");
             }}
-            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            className="p-1.5 ml-2 rounded-lg border border-white/60 bg-white/60 hover:bg-white/70 text-slate-600 hover:text-slate-900 text-xs transition-colors"
             title="Reset Filters & Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -240,11 +240,11 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       )}
 
       {/* Payments Table */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-white/60 bg-white/40 backdrop-blur-md text-[10px] font-mono text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Invoice Reference</th>
                 <th className="py-3 px-4">PO Reference</th>
                 <th className="py-3 px-4">Vendor Partner</th>
@@ -259,7 +259,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
               {loading ? (
                 // Loading Skeleton Rows
                 Array.from({ length: itemsPerPage }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                  <tr key={`skeleton-${i}`} className="border-b border-white/40">
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
@@ -274,14 +274,14 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                 paginatedPayments.map((p) => (
                   <tr 
                     key={p.uuid || p.id}
-                    className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
+                    className="border-b border-white/50 hover:bg-white/40 backdrop-blur-md transition-all text-xs"
                   >
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.invoiceId}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.purchase_order_number}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{p.vendorName}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">{p.amount}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-600">{p.invoiceId}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-600">{p.purchase_order_number}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">{p.vendorName}</td>
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">{p.amount}</td>
                     <td className="py-3.5 px-4 font-mono text-slate-500">{p.dueDate}</td>
-                    <td className="py-3.5 px-4 text-slate-400 font-medium">{p.method}</td>
+                    <td className="py-3.5 px-4 text-slate-600 font-medium">{p.method}</td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
                         p.status === "Paid" 
@@ -291,7 +291,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                             : p.status === "Pending"
                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
                               : p.status === "Unpaid"
-                              ? "bg-slate-500/10 text-slate-400 border border-slate-500/10"
+                              ? "bg-slate-500/10 text-slate-600 border border-slate-500/10"
                               : "bg-rose-500/10 text-rose-400 border border-rose-500/10"
                       }`}>
                         {p.status}
@@ -302,17 +302,17 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
                           {activeMenuId === p.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               {p.status !== "Paid" && p.uuid && (
                                 <button
                                   onClick={() => handleProcessPayment(p.uuid as string, p.vendorName, p.amount)}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-emerald-600/10 hover:text-white flex items-center gap-1.5"
+                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-emerald-600/10 hover:text-slate-900 flex items-center gap-1.5"
                                 >
                                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                                   <span>Authorize Payment</span>
@@ -320,7 +320,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                               )}
                               <button
                                 onClick={() => handleOpenEditModal(p)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Edit Payment</span>
@@ -353,7 +353,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/20 flex items-center justify-between">
+        <div className="p-4 border-t border-white/60 bg-white/40 backdrop-blur-md flex items-center justify-between">
           <span className="text-[10px] font-mono text-slate-500">
             Page {currentPage} of {totalPages}
           </span>
@@ -361,14 +361,14 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -379,16 +379,16 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       {/* Add / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#0a0e1a] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+          <div className="bg-[#0a0e1a] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] shadow-2xl flex flex-col">
             
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/20">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-indigo-400" />
                 {modalMode === "add" ? "Create New Payment" : "Edit Payment"}
               </h2>
               <button 
                 onClick={handleCloseModalInternal}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+                className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -399,12 +399,12 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                 
                 {/* Purchase Order Selection */}
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Linked Purchase Order</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Linked Purchase Order</label>
                   <select
                     required
                     value={formData.purchase_order_id}
                     onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                   >
                     <option value="" disabled>Select a Purchase Order...</option>
                     {purchaseOrders.map((po) => (
@@ -416,7 +416,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Vendor</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Vendor</label>
                   <input 
                     type="text" 
                     readOnly 
@@ -427,7 +427,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Amount Paid ($)</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Amount Paid ($)</label>
                     <input 
                       required
                       type="number"
@@ -435,29 +435,29 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                       step="any"
                       value={formData.amount_paid}
                       onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Due Date</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Due Date</label>
                     <input 
                       required
                       type="date"
                       value={formData.dueDate}
                       onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Payment Method</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Payment Method</label>
                     <select
                       required
                       value={formData.method}
                       onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     >
                       <option value="ACH">ACH</option>
                       <option value="ACH Transfer">ACH Transfer</option>
@@ -468,12 +468,12 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Status</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Status</label>
                     <select
                       required
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     >
                       <option value="Unpaid">Unpaid</option>
                       <option value="Pending">Pending</option>
@@ -492,7 +492,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
               <button 
                 type="button"
                 onClick={handleCloseModalInternal}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-800 transition-colors"
               >
                 Cancel
               </button>

@@ -1,120 +1,56 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Cpu, Mail, Globe, ShieldCheck, Heart } from "lucide-react";
+import React from 'react';
+import { Rocket, ArrowRight } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-  const navigate = useNavigate();
-
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    if (window.location.pathname !== "/") {
-      navigate("/");
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          window.scrollTo({
-            top: element.offsetTop - 80,
-            behavior: "smooth"
-          });
-        }
-      }, 150);
-      return;
-    }
-    const element = document.getElementById(id);
-    if (element) {
-      window.scrollTo({
-        top: element.offsetTop - 80,
-        behavior: "smooth"
-      });
-    }
-  };
-
-  const handleHomeClick = () => {
-    if (window.location.pathname !== "/") {
-      navigate("/");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   return (
-    <footer className="bg-[#02050b] border-t border-slate-900 text-slate-400 relative z-10 pt-16 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 mb-12">
-          {/* Logo & Description */}
-          <div className="md:col-span-4 space-y-4">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={handleHomeClick}>
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow shadow-indigo-500/20">
-                <Cpu className="w-4 h-4" />
+    <footer className="relative w-full z-10 py-16 px-4 lg:px-8">
+      {/* Container for CTA Card */}
+      <div className="max-w-[1200px] mx-auto mb-16 relative">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="w-full bg-gradient-to-br from-white/70 via-white/50 to-indigo-50/40 backdrop-blur-3xl rounded-[2.5rem] border border-indigo-100 shadow-[0_20px_60px_-15px_rgba(99,102,241,0.15),0_0_0_1px_rgba(255,255,255,0.6)_inset] overflow-hidden relative"
+        >
+          {/* Ambient Backgrounds inside Card */}
+          <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-pink-200/40 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-cyan-200/40 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="p-10 lg:p-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10 relative z-10">
+            {/* Left Content */}
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-white shadow-sm mb-6">
+                <Rocket className="w-4 h-4 text-indigo-600" />
+                <span className="text-[10px] font-bold tracking-widest text-indigo-600 uppercase">Ready to get started?</span>
               </div>
-              <span className="font-display font-bold text-lg tracking-tight text-white">Inventix</span>
+              
+              <h2 className="text-4xl lg:text-[3.5rem] font-display font-black text-slate-900 tracking-tight mb-4 leading-tight">
+                Start your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">Inventix</span> journey.
+              </h2>
+              
+              <p className="text-slate-600 text-lg leading-relaxed max-w-xl font-medium">
+                Join forward-thinking teams who are already transforming their procurement, inventory, and operations with Inventix.
+              </p>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              Inventix is the leading enterprise-grade Procurement & Inventory Management platform designed specifically for global manufacturers, physical warehouses, and modern supply networks.
-            </p>
-            <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>Continuous SOC 2 Audit Pipeline</span>
+
+            {/* Right Button */}
+            <div className="shrink-0 lg:mr-8">
+              <Link to="/login" className="flex items-center justify-center gap-3 px-8 py-4 bg-white hover:bg-slate-50 text-indigo-600 font-bold text-lg rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.08),_0_0_0_1px_rgba(255,255,255,1)_inset] transition-all hover:scale-105 active:scale-95 group">
+                <ArrowRight className="w-5 h-5 text-indigo-600 transition-transform group-hover:translate-x-1" />
+                Go to Login
+              </Link>
             </div>
           </div>
+        </motion.div>
+      </div>
 
-          {/* Column 2 - Platform */}
-          <div className="md:col-span-2 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Platform</h4>
-            <ul className="space-y-2.5 text-xs">
-              <li><a href="#features" onClick={(e) => handleLinkClick(e, "features")} className="hover:text-white transition-colors">Features</a></li>
-              <li><a href="#how-it-works" onClick={(e) => handleLinkClick(e, "how-it-works")} className="hover:text-white transition-colors">How It Works</a></li>
-              <li><a href="#why-inventix" onClick={(e) => handleLinkClick(e, "why-inventix")} className="hover:text-white transition-colors">Why Inventix</a></li>
-            </ul>
-          </div>
-
-          {/* Column 3 - Enterprise */}
-          <div className="md:col-span-2 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Integrations</h4>
-            <ul className="space-y-2.5 text-xs">
-              <li><span className="text-slate-600 cursor-default">SAP ERP Connector</span></li>
-              <li><span className="text-slate-600 cursor-default">Oracle NetSuite Sync</span></li>
-              <li><span className="text-slate-600 cursor-default">EDI Gateways</span></li>
-              <li><span className="text-slate-600 cursor-default">Custom Webhooks</span></li>
-            </ul>
-          </div>
-
-          {/* Column 4 - Contact / Newsletter */}
-          <div className="md:col-span-4 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Stay Updated</h4>
-            <p className="text-xs text-slate-400">Receive strategic manufacturing supply briefings monthly.</p>
-            <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
-              <div className="relative flex-1">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="email"
-                  placeholder="corporate@domain.com"
-                  className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-800 bg-slate-900/40 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-              >
-                Join
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="h-px bg-slate-900 my-8" />
-
-        {/* Bottom part */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {currentYear} Inventix Technologies Inc. All rights reserved.</p>
-          <div className="flex gap-6 text-slate-500">
-            <span className="hover:text-slate-400 cursor-pointer">Terms of Service</span>
-            <span className="hover:text-slate-400 cursor-pointer">Privacy Charter</span>
-            <span className="hover:text-slate-400 cursor-pointer">Trust & Security</span>
-          </div>
-        </div>
+      {/* Very Simple Footer */}
+      <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center px-8">
+        <span className="text-[13px] font-semibold text-slate-500 mb-2 md:mb-0">Inventix ERP</span>
+        <span className="text-[13px] font-semibold text-slate-500">AI-Powered Enterprise Operations</span>
       </div>
     </footer>
   );

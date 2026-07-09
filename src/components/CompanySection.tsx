@@ -30,7 +30,7 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Building2 className="w-5 h-5 text-indigo-400" />
             <span>Corporate Entity Profile</span>
           </h1>
@@ -42,8 +42,8 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Entity Card */}
-        <div className="lg:col-span-2 p-6 rounded-2xl border border-slate-900 bg-[#040815] space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-900/60 pb-4">
+        <div className="lg:col-span-2 p-6 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl space-y-6">
+          <div className="flex items-center justify-between border-b border-white/60/60 pb-4">
             <h2 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">
               Organizational Metadata
             </h2>
@@ -59,22 +59,22 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
             
             <div className="space-y-1">
               <span className="text-slate-500 font-mono">Organization Name</span>
-              <span className="text-slate-200 font-semibold block">{profile.name}</span>
+              <span className="text-slate-900 font-semibold block">{profile.name}</span>
             </div>
 
             <div className="space-y-1">
               <span className="text-slate-500 font-mono">Legal Registered Name</span>
-              <span className="text-slate-200 font-semibold block">{profile.legalName}</span>
+              <span className="text-slate-900 font-semibold block">{profile.legalName}</span>
             </div>
 
             <div className="space-y-1">
               <span className="text-slate-500 font-mono">Tax / EIN ID Number</span>
-              <span className="text-slate-200 font-semibold block font-mono">{profile.taxId}</span>
+              <span className="text-slate-900 font-semibold block font-mono">{profile.taxId}</span>
             </div>
 
             <div className="space-y-1">
               <span className="text-slate-500 font-mono">DUNS Corporate Rating Code</span>
-              <span className="text-slate-200 font-semibold block font-mono">{profile.dunsNumber}</span>
+              <span className="text-slate-900 font-semibold block font-mono">{profile.dunsNumber}</span>
             </div>
 
             <div className="space-y-1 sm:col-span-2">
@@ -82,16 +82,16 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
                 <MapPin className="w-3.5 h-3.5 text-slate-600" />
                 <span>Global Headquarters Address</span>
               </span>
-              <span className="text-slate-200 font-semibold block">{profile.hqAddress}</span>
+              <span className="text-slate-900 font-semibold block">{profile.hqAddress}</span>
             </div>
 
           </div>
         </div>
 
         {/* Subscription & Cloud Security */}
-        <div className="p-6 rounded-2xl border border-slate-900 bg-[#040815] flex flex-col justify-between space-y-6">
+        <div className="p-6 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col justify-between space-y-6">
           <div className="space-y-4">
-            <h2 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest border-b border-slate-900/60 pb-4">
+            <h2 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest border-b border-white/60/60 pb-4">
               Licensing & Security
             </h2>
 
@@ -101,12 +101,12 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
                   <span className="font-bold text-indigo-300">Enterprise Gold Plan</span>
                   <span className="text-[9px] font-bold text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase">Active</span>
                 </div>
-                <p className="text-[10px] text-slate-400">Licensed up to 150 administrative users. Full database replication active.</p>
+                <p className="text-[10px] text-slate-600">Licensed up to 150 administrative users. Full database replication active.</p>
               </div>
 
               <div className="space-y-1">
                 <span className="text-slate-500 font-mono text-[10px] block">Cloud Host Region</span>
-                <span className="text-slate-300 block font-semibold flex items-center gap-1.5">
+                <span className="text-slate-800 block font-semibold flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-slate-500" />
                   {profile.dataRegion}
                 </span>
@@ -114,12 +114,12 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
 
               <div className="space-y-1">
                 <span className="text-slate-500 font-mono text-[10px] block">Corporate Billing Cycle</span>
-                <span className="text-slate-300 block font-semibold">{profile.billingCycle}</span>
+                <span className="text-slate-800 block font-semibold">{profile.billingCycle}</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-900/60 text-[10px] text-slate-600 font-mono">
+          <div className="pt-4 border-t border-white/60/60 text-[10px] text-slate-600 font-mono">
             Security Status: Compliance SOC-2 Type II Certified
           </div>
         </div>

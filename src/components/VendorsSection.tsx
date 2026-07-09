@@ -126,7 +126,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Users className="w-5 h-5 text-indigo-400" />
             <span>Sourcing Vendors &amp; Supplier Directory</span>
           </h1>
@@ -147,7 +147,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
@@ -155,7 +155,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
             placeholder="Search vendor name, contact or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+            className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
           >
             <option value="All">All Suppliers</option>
             <option value="Preferred">Preferred (Tier 1)</option>
@@ -178,7 +178,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
               refreshVendors();
               onShowToast("Filters reset and data refreshed.", "info");
             }}
-            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            className="p-1.5 ml-2 rounded-lg border border-white/60 bg-white/60 hover:bg-white/70 text-slate-600 hover:text-slate-900 text-xs transition-colors"
             title="Reset Filters & Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -201,11 +201,11 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
       )}
 
       {/* Vendors Table */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-white/60 bg-white/40 backdrop-blur-md text-[10px] font-mono text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4">Vendor ID</th>
                 <th className="py-3 px-4">Supplier Name</th>
                 <th className="py-3 px-4">Sourcing Category</th>
@@ -219,7 +219,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
             <tbody>
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                  <tr key={`skeleton-${i}`} className="border-b border-white/40">
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
@@ -237,10 +237,10 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                 ))
               ) : filteredVendors.length > 0 ? (
                 filteredVendors.map((v) => (
-                  <tr key={v.id} className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs">
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{v.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{v.name}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{v.category}</td>
+                  <tr key={v.id} className="border-b border-white/50 hover:bg-white/40 backdrop-blur-md transition-all text-xs">
+                    <td className="py-3.5 px-4 font-mono text-slate-600">{v.id}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">{v.name}</td>
+                    <td className="py-3.5 px-4 text-slate-600">{v.category}</td>
                     <td className="py-3.5 px-4 text-center font-mono font-bold">
                       <span className={`px-2 py-0.5 rounded text-[11px] ${
                         v.score >= 90 ? "text-emerald-400 bg-emerald-500/5" : "text-amber-400 bg-amber-500/5"
@@ -248,9 +248,9 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                         {v.score}/100
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center font-mono text-slate-300 font-semibold">{v.onTime}</td>
+                    <td className="py-3.5 px-4 text-center font-mono text-slate-800 font-semibold">{v.onTime}</td>
                     <td className="py-3.5 px-4">
-                      <span className="text-slate-300 block">{v.contact}</span>
+                      <span className="text-slate-800 block">{v.contact}</span>
                       <span className="text-[10px] text-slate-500 block">{v.email}</span>
                     </td>
                     <td className="py-3.5 px-4">
@@ -269,22 +269,22 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                         <div className="relative inline-block text-left">
                           <button
                             onClick={() => setActiveMenuId(activeMenuId === v.id ? null : v.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           {activeMenuId === v.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               <button
                                 onClick={() => handleAuditVendor(v.name)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Award className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Audit SLA Compliance</span>
                               </button>
                               <button
                                 onClick={() => handleEditClick(v)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Edit Details</span>
@@ -292,14 +292,14 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                               <div className="h-px bg-slate-900 my-1" />
                               <button
                                 onClick={() => handleUpdateStatus(v.id, "Preferred")}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <CheckCircle className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Promote to Tier-1</span>
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus(v.id, "Under Review")}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
                                 <span>Put Under Review</span>
@@ -334,71 +334,71 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
       {/* Modals */}
       {(showAddModal || isEditModalOpen) && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-md bg-[#050914] border border-slate-900 rounded-2xl p-6 shadow-2xl z-10">
+          <div className="absolute inset-0 bg-white/60/80 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative w-full max-w-md bg-[#050914] border border-white/60 rounded-2xl p-6 shadow-2xl z-10">
             <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
+              <div className="flex items-center gap-2 pb-2 border-b border-white/60">
                 <Users className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-bold text-white">
+                <h3 className="text-sm font-bold text-slate-900">
                   {isEditModalOpen ? "Edit Vendor Details" : "Register Vendor"}
                 </h3>
               </div>
               <div className="space-y-3 text-xs">
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Company Name</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Company Name</label>
                   <input
                     required type="text" value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Category</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Category</label>
                   <input
                     required type="text" value={formData.category}
                     onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Quality Score (0–100)</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Quality Score (0–100)</label>
                     <input
                       required type="number" min="0" max="100" value={formData.score}
                       onChange={e => setFormData({ ...formData, score: Number(e.target.value) })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">On-Time % (e.g. 95%)</label>
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">On-Time % (e.g. 95%)</label>
                     <input
                       required type="text" placeholder="95%" value={formData.onTime}
                       onChange={e => setFormData({ ...formData, onTime: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Contact Name</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Contact Name</label>
                   <input
                     type="text" value={formData.contact}
                     onChange={e => setFormData({ ...formData, contact: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Contact Email</label>
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Contact Email</label>
                   <input
                     type="email" value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
+                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
                   />
                 </div>
               </div>
               <div className="pt-2 flex items-center justify-end gap-3">
                 <button
                   type="button" onClick={closeModal}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

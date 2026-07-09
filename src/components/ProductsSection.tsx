@@ -149,7 +149,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Box className="w-5 h-5 text-indigo-400" />
             <span>Product Catalog</span>
           </h1>
@@ -170,7 +170,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
       </div>
 
       {/* Filters Bar */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col md:flex-row gap-4 justify-between items-center">
         
         {/* Search */}
         <div className="relative w-full md:w-80">
@@ -183,7 +183,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
 
@@ -197,7 +197,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                 setSelectedCategory(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+              className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
             >
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -211,7 +211,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                 setSelectedStatus(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+              className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
             >
               {statuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -226,7 +226,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
               refreshProducts();
               onShowToast("Filters reset and data refreshed.", "info");
             }}
-            className="p-1.5 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            className="p-1.5 rounded-lg border border-white/60 bg-white/60 hover:bg-white/70 text-slate-600 hover:text-slate-900 text-xs transition-colors"
             title="Reset Filters & Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -252,20 +252,20 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
       )}
 
       {/* Enterprise Products Table */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/25 text-[10px] font-mono text-slate-500 uppercase tracking-wider sticky top-0 backdrop-blur-md">
+              <tr className="border-b border-white/60 bg-white/60/25 text-[10px] font-mono text-slate-500 uppercase tracking-wider sticky top-0 backdrop-blur-md">
                 <th className="py-3 px-4">ID / SKU</th>
-                <th className="py-3 px-4 cursor-pointer hover:text-white select-none" onClick={() => toggleSort("name")}>
+                <th className="py-3 px-4 cursor-pointer hover:text-slate-900 select-none" onClick={() => toggleSort("name")}>
                   Product Name <SortIndicator active={sortBy === "name"} order={sortOrder} />
                 </th>
                 <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4 cursor-pointer hover:text-white select-none text-right" onClick={() => toggleSort("price")}>
+                <th className="py-3 px-4 cursor-pointer hover:text-slate-900 select-none text-right" onClick={() => toggleSort("price")}>
                   Unit Price <SortIndicator active={sortBy === "price"} order={sortOrder} />
                 </th>
-                <th className="py-3 px-4 cursor-pointer hover:text-white select-none text-center" onClick={() => toggleSort("leadTime")}>
+                <th className="py-3 px-4 cursor-pointer hover:text-slate-900 select-none text-center" onClick={() => toggleSort("leadTime")}>
                   Lead Time <SortIndicator active={sortBy === "leadTime"} order={sortOrder} />
                 </th>
                 <th className="py-3 px-4">Primary Sourcing Vendor</th>
@@ -277,7 +277,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
               {loading ? (
                 // Loading Skeleton Rows
                 Array.from({ length: itemsPerPage }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                  <tr key={`skeleton-${i}`} className="border-b border-white/40">
                     <td className="py-4 px-4"><SkeletonLoader className="h-8 w-24 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
@@ -293,24 +293,24 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                   <tr 
                     key={p.id}
                     onClick={() => handleRowClick(p)}
-                    className="border-b border-slate-900/40 hover:bg-slate-950/30 transition-all cursor-pointer text-xs"
+                    className="border-b border-white/40 hover:bg-white/60/30 transition-all cursor-pointer text-xs"
                   >
                     <td className="py-3.5 px-4 font-mono">
-                      <span className="text-slate-300 font-semibold block">
+                      <span className="text-slate-800 font-semibold block">
                         <HighlightText text={p.id} search={search} />
                       </span>
                       <span className="text-[9px] text-slate-500 block">
                         <HighlightText text={p.sku} search={search} />
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">
                       <HighlightText text={p.name} search={search} />
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">{p.category}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-200">
+                    <td className="py-3.5 px-4 text-slate-600">{p.category}</td>
+                    <td className="py-3.5 px-4 text-right font-mono font-medium text-slate-900">
                       {formatCurrency(p.unitPrice)}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-mono text-slate-400">
+                    <td className="py-3.5 px-4 text-center font-mono text-slate-600">
                       {p.leadTimeDays} days
                     </td>
                     <td className="py-3.5 px-4 text-indigo-400/90 font-medium">
@@ -332,30 +332,30 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
                           {activeMenuId === p.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               <button
                                 onClick={() => handleUpdateStatus(p.id, "In Stock")}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Check className="w-3.5 h-3.5 text-emerald-500" />
                                 <span>Set In Stock</span>
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus(p.id, "Low Stock")}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Check className="w-3.5 h-3.5 text-amber-500" />
                                 <span>Set Low Stock</span>
                               </button>
                               <button
                                 onClick={() => handleEditClick(p)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
                               >
                                 <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Edit Details</span>
@@ -398,7 +398,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
         </div>
 
         {/* Table Footer / Pagination */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/20 flex items-center justify-between">
+        <div className="p-4 border-t border-white/60 bg-white/40 backdrop-blur-md flex items-center justify-between">
           <span className="text-[10px] font-mono text-slate-500">
             Showing {indexOfFirstItem() + 1}-{Math.min(indexOfLastItem(), filteredProducts.length)} of {filteredProducts.length} entries
           </span>
@@ -406,17 +406,17 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <span className="text-xs font-semibold text-slate-300 px-2">
+            <span className="text-xs font-semibold text-slate-800 px-2">
               Page {currentPage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -427,45 +427,45 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
       {/* Add / Edit Modals */}
       {(showAddModal || isEditModalOpen) && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
-          <div className="relative w-full max-w-md bg-[#050914] border border-slate-900 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
+          <div className="absolute inset-0 bg-white/60/80 backdrop-blur-sm" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
+          <div className="relative w-full max-w-md bg-[#050914] border border-white/60 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
             <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
+              <div className="flex items-center gap-2 pb-2 border-b border-white/60">
                 <Box className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-bold text-white">{isEditModalOpen ? "Edit Product Details" : "Register Product SKU"}</h3>
+                <h3 className="text-sm font-bold text-slate-900">{isEditModalOpen ? "Edit Product Details" : "Register Product SKU"}</h3>
               </div>
               <div className="space-y-3 text-xs">
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Product Name</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Product Name</label>
+                  <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">SKU</label>
-                    <input required type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">SKU</label>
+                    <input required type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Category</label>
-                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Category</label>
+                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Unit Price ($)</label>
-                    <input required type="number" min="0" step="any" value={formData.unitPrice} onChange={e => setFormData({ ...formData, unitPrice: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Unit Price ($)</label>
+                    <input required type="number" min="0" step="any" value={formData.unitPrice} onChange={e => setFormData({ ...formData, unitPrice: Number(e.target.value) })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Lead Time (Days)</label>
-                    <input required type="number" min="0" value={formData.leadTimeDays} onChange={e => setFormData({ ...formData, leadTimeDays: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Lead Time (Days)</label>
+                    <input required type="number" min="0" value={formData.leadTimeDays} onChange={e => setFormData({ ...formData, leadTimeDays: Number(e.target.value) })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Primary Vendor</label>
-                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none" />
+                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Primary Vendor</label>
+                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
                 </div>
               </div>
               <div className="pt-2 flex items-center justify-end gap-3">
-                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer">Cancel</button>
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">Cancel</button>
                 <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer">
                   {isEditModalOpen ? "Save Changes" : "Register SKU"}
                 </button>

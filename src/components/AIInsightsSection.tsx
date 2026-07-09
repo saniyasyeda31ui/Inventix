@@ -45,7 +45,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-400" />
             <span>AI Procurement Assistant & Predictive Insights</span>
           </h1>
@@ -55,7 +55,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
         <button
           onClick={handleRefreshAI}
           disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-900 hover:border-slate-800 hover:bg-slate-900/60 text-slate-300 text-xs font-semibold cursor-pointer disabled:opacity-50 button-hover-scale"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/60/80 border border-white/60 hover:border-slate-800 hover:bg-white/70 text-slate-800 text-xs font-semibold cursor-pointer disabled:opacity-50 button-hover-scale"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
           <span>{isRefreshing ? "Calculating..." : "Recalculate Models"}</span>
@@ -65,22 +65,22 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
+        <div className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl space-y-1 card-hover-effect">
           <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Potential Cost Savings</span>
           <div className="text-2xl font-bold text-emerald-400 tracking-tight">$34,800/mo</div>
-          <p className="text-[10px] text-slate-400">Through strategic supplier switches and volume optimizations.</p>
+          <p className="text-[10px] text-slate-600">Through strategic supplier switches and volume optimizations.</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
+        <div className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl space-y-1 card-hover-effect">
           <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Supply Chain Risk Score</span>
           <div className="text-2xl font-bold text-indigo-400 tracking-tight">94.2 / 100</div>
-          <p className="text-[10px] text-slate-400">99.8% accurate lead-time prediction buffer active.</p>
+          <p className="text-[10px] text-slate-600">99.8% accurate lead-time prediction buffer active.</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
+        <div className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl space-y-1 card-hover-effect">
           <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Predicted Stockouts Avoided</span>
-          <div className="text-2xl font-bold text-white tracking-tight">12 SKUs</div>
-          <p className="text-[10px] text-slate-400">Automated buffer threshold triggered last 30 days.</p>
+          <div className="text-2xl font-bold text-slate-900 tracking-tight">12 SKUs</div>
+          <p className="text-[10px] text-slate-600">Automated buffer threshold triggered last 30 days.</p>
         </div>
 
       </div>
@@ -114,7 +114,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
           <div className="space-y-4">
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="p-5 rounded-2xl border bg-[#040815] border-slate-900/40 space-y-4 animate-pulse">
+                <div key={`skeleton-${i}`} className="p-5 rounded-2xl border bg-white/50 backdrop-blur-2xl border-white/40 space-y-4 animate-pulse">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-slate-800" />
                     <div className="h-5 w-48 rounded bg-slate-800" />
@@ -132,7 +132,7 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
               recs.map((r) => (
                 <div 
                   key={r.id}
-                  className={`p-5 rounded-2xl border bg-[#040815] transition-all flex flex-col justify-between gap-4 card-hover-effect ${
+                  className={`p-5 rounded-2xl border bg-white/50 backdrop-blur-2xl transition-all flex flex-col justify-between gap-4 card-hover-effect ${
                     r.severity === "high" 
                       ? "border-rose-500/10 hover:border-rose-500/20" 
                       : r.severity === "medium" 
@@ -151,21 +151,21 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                       {r.severity === "high" ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-200">{r.item}</h3>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.alert}</p>
+                      <h3 className="font-bold text-slate-900">{r.item}</h3>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">{r.alert}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                    <div className="p-3 rounded-xl bg-white/50 backdrop-blur-md border border-white/50">
                       <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Reorder Volume</span>
-                      <span className="text-sm font-bold text-slate-200">{r.reorderQty} units</span>
+                      <span className="text-sm font-bold text-slate-900">{r.reorderQty} units</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                    <div className="p-3 rounded-xl bg-white/50 backdrop-blur-md border border-white/50">
                       <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Alt. Supplier</span>
-                      <span className="text-sm font-bold text-slate-200">{r.alternativeSupplier}</span>
+                      <span className="text-sm font-bold text-slate-900">{r.alternativeSupplier}</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
+                    <div className="p-3 rounded-xl bg-white/50 backdrop-blur-md border border-white/50">
                       <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Proj. Savings</span>
                       <span className="text-sm font-bold text-emerald-400">{r.estimatedSavings}</span>
                     </div>
@@ -188,12 +188,12 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                 </div>
               ))
             ) : (
-              <div className="p-12 rounded-2xl border border-slate-900 bg-[#040815] flex flex-col items-center justify-center text-center space-y-4">
+              <div className="p-12 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col items-center justify-center text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-800">
                   <Sparkles className="w-8 h-8 text-slate-500" />
                 </div>
                 <div>
-                  <h3 className="text-slate-300 font-bold">No Active Recommendations</h3>
+                  <h3 className="text-slate-800 font-bold">No Active Recommendations</h3>
                   <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
                     The AI engine has optimized your current inventory parameters. Check back later for newly computed sourcing strategies.
                   </p>
@@ -209,10 +209,10 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
             Predicted Demand Curve
           </h2>
 
-          <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-4 card-hover-effect">
+          <div className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl space-y-4 card-hover-effect">
             <div className="space-y-1">
               <span className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider block">Seasonal Demand Forecast</span>
-              <h3 className="text-sm font-bold text-white">Q3/Q4 Production Wave</h3>
+              <h3 className="text-sm font-bold text-slate-900">Q3/Q4 Production Wave</h3>
               <p className="text-xs text-slate-500">Autonomous predictions modeling higher requirements in autumn.</p>
             </div>
 
@@ -279,8 +279,8 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
             </div>
 
             <div className="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/10 space-y-2">
-              <h4 className="text-[11px] font-bold text-slate-200">Recommended Stock Buffers:</h4>
-              <ul className="space-y-1 text-[10px] text-slate-400 list-disc list-inside">
+              <h4 className="text-[11px] font-bold text-slate-900">Recommended Stock Buffers:</h4>
+              <ul className="space-y-1 text-[10px] text-slate-600 list-disc list-inside">
                 <li>Increase Copper Safety margins by 15%</li>
                 <li>Lock pricing contracts for Polymers now</li>
                 <li>Verify air cargo lanes for wafer transit</li>

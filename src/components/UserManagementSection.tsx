@@ -100,7 +100,7 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
       <div className="p-8 text-center border border-red-900/50 rounded-2xl bg-red-900/10">
         <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-bold text-red-400 mb-2">Error Loading Users</h3>
-        <p className="text-sm text-slate-400">{error}</p>
+        <p className="text-sm text-slate-600">{error}</p>
         <button onClick={refreshUsers} className="mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors">
           Retry
         </button>
@@ -113,8 +113,8 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-1">User Management</h2>
-          <p className="text-sm text-slate-400">Enterprise user provisioning and access control.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-1">User Management</h2>
+          <p className="text-sm text-slate-600">Enterprise user provisioning and access control.</p>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -125,13 +125,13 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
               placeholder="Search users..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-slate-900/50 border border-slate-700/50 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
             />
           </div>
           
           <button 
             onClick={refreshUsers}
-            className="p-2 bg-slate-900/50 border border-slate-700/50 text-slate-400 hover:text-white rounded-xl transition-colors shrink-0"
+            className="p-2 bg-slate-900/50 border border-slate-700/50 text-slate-600 hover:text-slate-900 rounded-xl transition-colors shrink-0"
             title="Refresh list"
           >
             <RefreshCw className="w-5 h-5" />
@@ -148,17 +148,17 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
       </div>
 
       {/* Users Table */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-xl">
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] backdrop-blur-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/80">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Department</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">App Role</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Employee</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Department</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">App Role</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -175,7 +175,7 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                 ))
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-600">
                     <ShieldAlert className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                     <p>No users found matching your search.</p>
                   </td>
@@ -185,13 +185,13 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                   <tr key={user.employee_uuid} className="hover:bg-slate-800/20 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">{user.name}</span>
+                        <span className="text-sm font-semibold text-slate-900">{user.name}</span>
                         <span className="text-xs text-slate-500">{user.email}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm text-slate-300">{user.department}</span>
+                        <span className="text-sm text-slate-800">{user.department}</span>
                         <span className="text-xs text-slate-500">{user.title}</span>
                       </div>
                     </td>
@@ -209,34 +209,34 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-400">
+                    <td className="px-6 py-4 text-sm text-slate-600">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right relative">
                       <button 
                         onClick={() => setActiveMenuId(activeMenuId === user.employee_uuid ? null : user.employee_uuid)}
-                        className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                        className="p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
                       >
                         <MoreVertical className="w-5 h-5" />
                       </button>
                       
                       {/* Dropdown Menu */}
                       {activeMenuId === user.employee_uuid && (
-                        <div className="absolute right-6 top-10 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 py-1 overflow-hidden">
-                          <button onClick={() => handleChangeRole(user, 'admin')} className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                        <div className="absolute right-6 top-10 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 py-1 overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
+                          <button onClick={() => handleChangeRole(user, 'admin')} className="w-full text-left px-4 py-2 text-sm text-slate-800 hover:bg-slate-800 hover:text-slate-900 transition-colors">
                             Change Role: Admin
                           </button>
-                          <button onClick={() => handleChangeRole(user, 'procurement_manager')} className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                          <button onClick={() => handleChangeRole(user, 'procurement_manager')} className="w-full text-left px-4 py-2 text-sm text-slate-800 hover:bg-slate-800 hover:text-slate-900 transition-colors">
                             Change Role: Procurement
                           </button>
-                          <button onClick={() => handleChangeRole(user, 'viewer')} className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                          <button onClick={() => handleChangeRole(user, 'viewer')} className="w-full text-left px-4 py-2 text-sm text-slate-800 hover:bg-slate-800 hover:text-slate-900 transition-colors">
                             Change Role: Viewer
                           </button>
                           <div className="h-px bg-slate-800 my-1" />
-                          <button onClick={() => handleResetPassword(user)} className="w-full flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                          <button onClick={() => handleResetPassword(user)} className="w-full flex items-center px-4 py-2 text-sm text-slate-800 hover:bg-slate-800 hover:text-slate-900 transition-colors">
                             <Key className="w-4 h-4 mr-2" /> Reset Password
                           </button>
-                          <button onClick={() => handleToggleStatus(user)} className="w-full flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                          <button onClick={() => handleToggleStatus(user)} className="w-full flex items-center px-4 py-2 text-sm text-slate-800 hover:bg-slate-800 hover:text-slate-900 transition-colors">
                             {user.status === 'Active' ? <XCircle className="w-4 h-4 mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                             {user.status === 'Active' ? 'Disable Account' : 'Enable Account'}
                           </button>
@@ -258,15 +258,15 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
       {/* Provision Modal */}
       {isProvisionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-indigo-400" />
                 Provision New User
               </h3>
               <button 
                 onClick={() => setIsProvisionModalOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-600 hover:text-slate-900 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -275,28 +275,28 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
             <form onSubmit={handleProvision} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Full Name</label>
                   <input 
                     required type="text"
                     value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
                 
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Work Email</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Work Email</label>
                   <input 
                     required type="email"
                     value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Department</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Department</label>
                   <select 
                     value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   >
                     <option value="Sourcing">Sourcing</option>
                     <option value="Logistics">Logistics</option>
@@ -307,19 +307,19 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Job Title</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Job Title</label>
                   <input 
                     required type="text" placeholder="e.g. Senior Buyer"
                     value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
                 
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Application Role</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Application Role</label>
                   <select 
                     value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as AppRole})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   >
                     <option value="admin">Admin</option>
                     <option value="procurement_manager">Procurement Manager</option>
@@ -331,10 +331,10 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Status</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Status</label>
                   <select 
                     value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}
-                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                   >
                     <option value="Active">Active</option>
                     <option value="Suspended">Disabled / Suspended</option>
@@ -346,7 +346,7 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
                 <button 
                   type="button" 
                   onClick={() => setIsProvisionModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-transparent hover:bg-slate-800 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-slate-800 hover:text-slate-900 bg-transparent hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
