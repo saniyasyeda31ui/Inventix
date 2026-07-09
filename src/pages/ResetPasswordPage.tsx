@@ -5,8 +5,8 @@ import { Cpu, Lock, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2, ArrowRight
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 
-export default function AcceptInvitationPage() {
-  const { user, profile, loading: authLoading } = useAuth();
+export default function ResetPasswordPage() {
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');
@@ -19,12 +19,13 @@ export default function AcceptInvitationPage() {
   const [hashError, setHashError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If the reset link itself had an error (e.g. expired)
     const hash = window.location.hash;
     if (hash && hash.includes('error_description=')) {
       const params = new URLSearchParams(hash.substring(1));
       const description = params.get('error_description');
       if (description) {
-        setHashError("This invitation has expired or is no longer valid. Please contact your administrator.");
+        setHashError("This password reset link has expired or is invalid. Please request a new one.");
       }
     }
   }, []);
@@ -63,9 +64,10 @@ export default function AcceptInvitationPage() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
-      setSuccessMsg("Your account has been activated successfully.");
+      setSuccessMsg("Your password has been successfully updated.");
       
       setTimeout(async () => {
+        // Sign out to force re-login with the new password
         await supabase.auth.signOut();
         navigate('/login');
       }, 2000);
@@ -76,11 +78,6 @@ export default function AcceptInvitationPage() {
     }
   };
 
-  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'User';
-  const displayRole = profile?.role || user?.user_metadata?.role || 'Member';
-  const displayDepartment = user?.user_metadata?.department || 'Operations';
-
-  // Shared UI renderer for full page errors (Access Denied / Expired)
   const renderErrorState = (title: string, msg: string) => (
     <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
       <motion.div 
@@ -94,10 +91,10 @@ export default function AcceptInvitationPage() {
         <h3 className="text-[22px] font-extrabold text-slate-900 font-display mb-2">{title}</h3>
         <p className="text-[13px] text-slate-500 leading-relaxed mb-8">{msg}</p>
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/forgot-password')}
           className="w-full rounded-[14px] bg-slate-900 text-white font-bold py-3.5 hover:bg-slate-800 transition-colors shadow-lg"
         >
-          Return to Sign In
+          Request New Link
         </button>
       </motion.div>
     </div>
@@ -108,14 +105,14 @@ export default function AcceptInvitationPage() {
       <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Verifying Invitation...</span>
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Verifying Link...</span>
         </div>
       </div>
     );
   }
 
-  if (hashError) return renderErrorState("Invitation Invalid", hashError);
-  if (!user) return renderErrorState("Access Denied", "You must access this page via a valid email invitation link.");
+  if (hashError) return renderErrorState("Link Invalid", hashError);
+  if (!user) return renderErrorState("Access Denied", "You must access this page via a valid password recovery link from your email.");
 
   return (
     <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
@@ -176,11 +173,11 @@ export default function AcceptInvitationPage() {
             </Link>
 
             <h1 className="font-display font-extrabold text-[38px] xl:text-[44px] tracking-tight leading-[1.05] text-slate-900 mb-4">
-              Accept <br/><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Invitation</span>
+              Secure <br/><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Recovery</span>
             </h1>
 
             <p className="text-slate-600 text-[12px] leading-relaxed mb-6 max-w-[380px]">
-              Complete your account activation to join your enterprise workspace. Set a secure password to unlock full access.
+              Set a strong, new password for your enterprise workspace. You will use this new password for all future sign ins.
             </p>
 
             <div className="flex items-center gap-4 mb-6">
@@ -230,7 +227,7 @@ export default function AcceptInvitationPage() {
           </div>
         </div>
 
-        {/* RIGHT SECTION (Activation Form) */}
+        {/* RIGHT SECTION (Reset Form) */}
         <div className="w-full md:w-[50%] h-full bg-white/40 relative flex flex-col justify-center p-8 lg:p-10 xl:p-12 rounded-[36px] md:rounded-l-none md:rounded-r-[36px]">
           <div className="w-full max-w-md mx-auto">
             
@@ -251,7 +248,7 @@ export default function AcceptInvitationPage() {
                 <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto text-emerald-500 mb-4 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                   <CheckCircle className="w-6 h-6" />
                 </div>
-                <h3 className="text-[18px] font-extrabold text-slate-900 font-display mb-2">Account Activated</h3>
+                <h3 className="text-[18px] font-extrabold text-slate-900 font-display mb-2">Password Updated</h3>
                 <p className="text-[12px] text-slate-500 leading-relaxed mb-6">
                   {successMsg}
                 </p>
@@ -266,8 +263,8 @@ export default function AcceptInvitationPage() {
                   className="space-y-6"
                 >
                   <div className="mb-6">
-                    <h2 className="text-[26px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">Setup Password</h2>
-                    <p className="text-slate-500 text-[11.5px] mt-2 leading-relaxed">Create a secure password for <strong className="text-indigo-600">{fullName}</strong>.</p>
+                    <h2 className="text-[26px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">Create New Password</h2>
+                    <p className="text-slate-500 text-[11.5px] mt-2 leading-relaxed">Enter a new secure password for your account.</p>
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
@@ -301,7 +298,7 @@ export default function AcceptInvitationPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Confirm Password</label>
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Confirm New Password</label>
                       <div className="relative flex items-center">
                         <Lock className="absolute left-3.5 w-4 h-4 text-slate-400" />
                         <input
@@ -343,7 +340,7 @@ export default function AcceptInvitationPage() {
                     >
                       <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
                       <span className="relative z-10 text-[12px]">
-                        {isSubmitting ? "Activating..." : "Activate Account"}
+                        {isSubmitting ? "Updating..." : "Update Password"}
                       </span>
                       {!isSubmitting && <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform" />}
                     </motion.button>

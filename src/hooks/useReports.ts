@@ -110,14 +110,14 @@ export function useReports(config: ReportConfig) {
         const res = await supabase.from('inventory_balances').select(`
           on_hand_qty, 
           safety_stock_qty, 
-          products:product_id (name, sku, category), 
+          products:product_id (product_name, sku, category), 
           warehouses:warehouse_id (name, location)
         `);
         fetchError = res.error;
         console.log("[useReports Diagnostics] Query Result Data (Raw):", res.data);
         
         data = (res.data || []).map((r: any) => ({
-          Product: r.products?.name || 'Unknown',
+          Product: r.products?.product_name || 'Unknown',
           SKU: r.products?.sku || 'Unknown',
           Category: r.products?.category || 'Unknown',
           Warehouse: r.warehouses?.name || 'Unknown',

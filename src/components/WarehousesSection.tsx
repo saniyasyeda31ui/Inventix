@@ -118,11 +118,11 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Warehouse className="w-5 h-5 text-indigo-400" />
+          <h1 className="font-display font-black text-3xl tracking-tight text-slate-900 flex items-center gap-2">
+            <Warehouse className="w-7 h-7 text-indigo-500" />
             <span>Warehouses & Facilities</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Monitor real-time storage capacities, physical layouts, and site manager logs.</p>
+          <p className="text-[13px] text-slate-500/80 mt-1 font-medium">Monitor real-time storage capacities, physical layouts, and site manager logs.</p>
         </div>
         {permissions?.canManageWarehouses && (
           <button
@@ -229,32 +229,32 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
           filteredWarehouses.map((wh) => (
             <div 
               key={wh.id}
-              className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl hover:border-indigo-500/20 hover:bg-white/40 backdrop-blur-md transition-all flex flex-col justify-between space-y-4 relative"
+              className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl hover:border-indigo-500/20 hover:bg-white/60/40 transition-all flex flex-col justify-between space-y-4 relative shadow-xl shadow-slate-900/5 hover:shadow-2xl"
             >
               
               {/* Header inside Card */}
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-widest">{wh.id}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{wh.id}</span>
+                    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[10px] font-bold uppercase tracking-widest border ${
                       wh.status === "Active" 
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
+                        ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
                         : wh.status === "At Capacity"
-                          ? "bg-rose-500/10 text-rose-400 border border-rose-500/10"
-                          : "bg-amber-500/10 text-amber-400 border border-amber-500/10"
+                          ? "bg-rose-500/10 text-rose-800 border-rose-500/20"
+                          : "bg-amber-500/10 text-amber-800 border-amber-500/20"
                     }`}>
                       {wh.status}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">{wh.name}</h3>
+                  <h3 className="text-base font-extrabold text-slate-950 tracking-tight">{wh.name}</h3>
                 </div>
 
                   {permissions?.canManageWarehouses && (
                     <div className="relative">
                       <button 
                         onClick={() => setActiveMenuId(activeMenuId === wh.id ? null : wh.id)}
-                        className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/70 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -263,37 +263,37 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
                         <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                           <button
                             onClick={() => handleOptimizeLayout(wh.name)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                           >
                             <Sliders className="w-3.5 h-3.5 text-indigo-400" />
                             <span>Optimize Layout</span>
                           </button>
-                          <div className="h-px bg-slate-900 my-1" />
+                          <div className="h-px bg-slate-800 my-1" />
                           <button
                             onClick={() => handleUpdateStatus(wh.id, "Active")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                           >
                             <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Set Active</span>
                           </button>
                           <button
                             onClick={() => handleUpdateStatus(wh.id, "At Capacity")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                           >
                             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
                             <span>Set At Capacity</span>
                           </button>
-                          <div className="h-px bg-slate-900 my-1" />
+                          <div className="h-px bg-slate-800 my-1" />
                           <button
                             onClick={() => handleEditClick(wh)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                           >
                             <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                             <span>Edit Warehouse</span>
                           </button>
                           <button
                             onClick={() => handleDelete(wh.id, wh.name)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-800 hover:bg-rose-500/10 hover:text-rose-400 flex items-center gap-1.5"
+                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                             <span>Delete Facility</span>
@@ -307,12 +307,12 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
               {/* Gauge Progress bar */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 font-mono">Storage Capacity Utilization</span>
-                  <span className={`font-bold font-mono ${wh.capacityUsed >= 90 ? "text-rose-400" : wh.capacityUsed >= 75 ? "text-amber-400" : "text-indigo-400"}`}>
+                  <span className="font-semibold text-slate-600">Storage Capacity Utilization</span>
+                  <span className={`font-extrabold font-mono text-sm ${wh.capacityUsed >= 90 ? "text-rose-600" : wh.capacityUsed >= 75 ? "text-amber-600" : "text-indigo-600"}`}>
                     {wh.capacityUsed}%
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]">
+                <div className="w-full h-2 rounded-full bg-white/60 overflow-hidden shadow-inner border border-white/60">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ${
                       wh.capacityUsed >= 90 ? "bg-rose-500" : wh.capacityUsed >= 75 ? "bg-amber-500" : "bg-indigo-500"
@@ -323,19 +323,19 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
               </div>
 
               {/* Specs & Info */}
-              <div className="pt-3 border-t border-white/60/60 text-xs space-y-2">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <MapPin className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              <div className="pt-3 border-t border-white/60 text-xs space-y-2">
+                <div className="flex items-center gap-2 text-slate-600 font-medium">
+                  <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                   <span className="truncate">{wh.location}</span>
                 </div>
                 
-                <div className="flex items-center gap-2 text-slate-600">
-                  <User className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                <div className="flex items-center gap-2 text-slate-600 font-medium">
+                  <User className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                   <span>Mgr: {wh.manager}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px]">
-                  <Layers className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                <div className="flex items-center gap-2 text-slate-600 font-medium text-[11px]">
+                  <Layers className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                   <span>Facility Footprint: {wh.totalAreaSqFt.toLocaleString()} sq ft</span>
                 </div>
               </div>

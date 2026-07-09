@@ -7,7 +7,7 @@ import {
   Search, Plus, CheckCircle, Clock, XCircle, AlertCircle, Filter, ShieldAlert,
   ChevronLeft, ChevronRight, Info, Sparkles, TrendingUp, Sun, Moon,
   X, Check, FileSpreadsheet, Building2, CreditCard, Layers,
-  ShoppingBag, Truck, Calendar, Sliders, Menu
+  ShoppingBag, Truck, Calendar, Sliders, Menu, Cpu
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import SkeletonLoader from "../components/SkeletonLoader";
@@ -292,11 +292,11 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_#fbcfe8_0%,_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#bfdbfe_0%,_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#e9d5ff_0%,_transparent_80%)]" />
-        
+
         {/* Abstract glowing waves/meshes */}
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }} transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }} className="absolute -left-[20%] top-[20%] w-[60vw] h-[60vw] bg-pink-300/40 rounded-full blur-[140px]" />
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }} className="absolute -right-[20%] bottom-[10%] w-[60vw] h-[60vw] bg-blue-300/40 rounded-full blur-[140px]" />
-        
+
         {/* Wave lines SVG mimicking the background energy */}
         <div className="absolute inset-0 opacity-[0.15]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -314,7 +314,7 @@ export default function DashboardPage() {
 
         {/* Animated mesh grid & tiny stars */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#ffffff_1.5px,_transparent_1.5px)] opacity-[0.5]" style={{ backgroundSize: '70px 70px' }} />
-        
+
         {/* Sparkles */}
         <div className="absolute top-[15%] left-[30%] w-2 h-2 bg-white rounded-full shadow-[0_0_10px_4px_rgba(255,255,255,1)]" />
         <div className="absolute top-[10%] right-[40%] w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_3px_rgba(255,255,255,0.8)]" />
@@ -341,8 +341,8 @@ export default function DashboardPage() {
                   animate={{ width: "0%" }}
                   transition={{ duration: 4, ease: "linear" }}
                   className={`absolute bottom-0 left-0 h-0.5 ${toast.type === "success" ? "bg-emerald-500" :
-                      toast.type === "error" ? "bg-rose-500" :
-                        toast.type === "warning" ? "bg-amber-500" : "bg-indigo-500"
+                    toast.type === "error" ? "bg-rose-500" :
+                      toast.type === "warning" ? "bg-amber-500" : "bg-indigo-500"
                     }`}
                 />
 
@@ -453,8 +453,8 @@ export default function DashboardPage() {
                         <div
                           key={n.id}
                           className={`p-4 rounded-[16px] text-left transition-all border shadow-sm ${n.read
-                              ? "bg-white/40 border-white/60 text-slate-600"
-                              : "bg-white border-white shadow-[0_4px_15px_rgba(0,0,0,0.03)] border-l-[3px] border-l-indigo-500"
+                            ? "bg-white/40 border-white/60 text-slate-600"
+                            : "bg-white border-white shadow-[0_4px_15px_rgba(0,0,0,0.03)] border-l-[3px] border-l-indigo-500"
                             }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -520,18 +520,37 @@ export default function DashboardPage() {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[14px] bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-display font-extrabold text-[17px] text-slate-900 leading-none tracking-tight">Inventix</span>
-                  <span className="px-1.5 py-0.5 text-[8.5px] font-bold rounded-md bg-indigo-100 text-indigo-700 border border-indigo-200 uppercase tracking-widest">
-                    ERP v2.6
-                  </span>
+            {/* Elevated Brand Anchor */}
+            <div className="flex items-center gap-3.5 p-1.5 pr-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.8)] relative group cursor-pointer transition-all hover:bg-white/60">
+
+              {/* Premium Logo Container */}
+              <div className="relative">
+                {/* Soft ambient glow behind logo */}
+                <div className="absolute inset-0 bg-indigo-500/40 blur-xl rounded-full scale-110 opacity-70 group-hover:opacity-100 transition-opacity" />
+
+                {/* High-Contrast Logo Box */}
+                <div className="relative w-[42px] h-[42px] rounded-[14px] bg-gradient-to-tr from-[#6D4CFF] to-[#8B5CF6] flex items-center justify-center shadow-[0_8px_16px_-4px_rgba(109,76,255,0.4),inset_0_2px_4px_rgba(255,255,255,0.3)] overflow-hidden border border-indigo-400/20">
+                  <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0)_100%)] w-[200%] -left-[100%] group-hover:animate-[shimmer_2s_infinite]" />
+                  <Cpu className="w-[22px] h-[22px] text-white drop-shadow-md relative z-10" strokeWidth={2.5} />
                 </div>
-                <p className="text-[10px] text-slate-500 font-bold mt-0.5">{profile?.organization || 'Organization'}</p>
+              </div>
+
+              {/* Typography Hierarchy */}
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center gap-2.5">
+                  {/* Primary Anchor */}
+                  <span className="font-display font-black text-[19px] text-slate-900 leading-none tracking-tight drop-shadow-sm">
+                    Inventix
+                  </span>
+                  {/* Premium Glass Badge */}
+                  <div className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-indigo-50/80 backdrop-blur-sm text-indigo-700 border border-indigo-200/60 uppercase tracking-widest shadow-[0_2px_4px_rgba(99,102,241,0.05),inset_0_1px_1px_rgba(255,255,255,1)]">
+                    ERP v2.6
+                  </div>
+                </div>
+                {/* Secondary Anchor */}
+                <p className="text-[10px] text-slate-500/90 font-bold mt-1 tracking-wide">
+                  {profile?.organization || 'Acme Sourcing Hub'}
+                </p>
               </div>
             </div>
           </div>
@@ -669,20 +688,20 @@ export default function DashboardPage() {
                       const IconComp = item.icon;
                       const isActive = activeTab === item.name;
                       return (
-                          <button
-                            key={itemIdx}
-                            onClick={() => {
-                              setActiveTab(item.name);
-                              window.scrollTo(0, 0);
-                            }}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[12px] text-left cursor-pointer transition-all duration-300 relative group overflow-hidden ${isActive
-                                ? "bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-[0_12px_24px_-6px_rgba(99,102,241,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] text-white font-bold -translate-y-0.5"
-                                : "text-slate-600 font-bold border border-transparent hover:bg-white/80 hover:text-indigo-600 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03),inset_0_1px_1px_rgba(255,255,255,1)]"
-                              }`}
-                          >
-                            {isActive && <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />}
-                            <span className="flex items-center gap-2.5 relative z-10">
-                              <IconComp className={`w-4 h-4 transition-all duration-300 ${isActive ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-slate-400 group-hover:text-indigo-500"}`} />
+                        <button
+                          key={itemIdx}
+                          onClick={() => {
+                            setActiveTab(item.name);
+                            window.scrollTo(0, 0);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[12px] text-[12px] text-left cursor-pointer transition-all duration-300 relative group overflow-hidden ${isActive
+                            ? "bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-[0_12px_24px_-6px_rgba(99,102,241,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] text-white font-bold -translate-y-0.5"
+                            : "text-slate-600 font-bold border border-transparent hover:bg-white/80 hover:text-indigo-600 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03),inset_0_1px_1px_rgba(255,255,255,1)]"
+                            }`}
+                        >
+                          {isActive && <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />}
+                          <span className="flex items-center gap-2.5 relative z-10">
+                            <IconComp className={`w-4 h-4 transition-all duration-300 ${isActive ? "text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-slate-400 group-hover:text-indigo-500"}`} />
                             <span className="tracking-wide">{item.name}</span>
                           </span>
 
@@ -754,8 +773,8 @@ export default function DashboardPage() {
                                 setIsMobileSidebarOpen(false);
                               }}
                               className={`w-full flex items-center justify-between px-3.5 py-3 rounded-[14px] text-[12.5px] text-left transition-all ${isActive
-                                  ? "bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] text-indigo-700 font-extrabold border border-indigo-50"
-                                  : "text-slate-600 font-semibold hover:bg-slate-50"
+                                ? "bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] text-indigo-700 font-extrabold border border-indigo-50"
+                                : "text-slate-600 font-semibold hover:bg-slate-50"
                                 }`}
                             >
                               <span className="flex items-center gap-3">
