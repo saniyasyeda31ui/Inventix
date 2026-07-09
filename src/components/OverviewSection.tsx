@@ -80,7 +80,7 @@ export default function OverviewSection({
             <div className="flex flex-wrap items-center gap-3">
               <div className="px-4 py-1.5 rounded-full bg-white/80 border border-indigo-100 shadow-sm flex items-center gap-2 backdrop-blur-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[11px] font-extrabold text-indigo-700 uppercase tracking-widest">{profile?.organization || 'Your Organization'}</span>
+                <span className="text-[11px] font-extrabold text-indigo-700 uppercase tracking-widest">{profile?.organization || ''}</span>
               </div>
               <div className="px-4 py-1.5 rounded-full bg-emerald-50/80 border border-emerald-100/50 shadow-sm flex items-center gap-2 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
@@ -91,10 +91,10 @@ export default function OverviewSection({
             {/* Welcome Text */}
             <div className="space-y-1">
               <h1 className="text-4xl sm:text-5xl font-extrabold font-display text-slate-900 tracking-tight leading-[1.1]">
-                Welcome back, <span className="capitalize text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">{displayName}</span>. <span className="inline-block animate-wave origin-[70%_70%]">👋</span>
+                Welcome back, <span className="capitalize text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">{profile?.full_name?.split(' ')[0] || ''}</span>. <span className="inline-block animate-wave origin-[70%_70%]">👋</span>
               </h1>
               <p className="text-[14px] text-slate-500 font-medium pt-1">
-                Executive Command Center overview for {profile?.organization || 'your organization'}.
+                Executive Command Center overview for {profile?.organization || ''}.
               </p>
             </div>
           </div>

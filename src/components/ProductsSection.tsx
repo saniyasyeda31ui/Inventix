@@ -7,6 +7,7 @@ import { ProductItem } from "../data/dashboardData";
 import { HighlightText, SortIndicator, EmptyState } from "./TableUX";
 import SkeletonLoader from "./SkeletonLoader";
 import { useProducts } from "../hooks/useProducts";
+import { useVendors } from "../hooks/useVendors";
 import { formatCurrency } from "../utils/formatters";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,6 +21,7 @@ interface ProductsSectionProps {
 export default function ProductsSection({ onShowToast, onOpenModal, activeModal, onCloseModal }: ProductsSectionProps) {
   const { permissions } = useAuth();
   const { products, setProducts, loading, error, refreshProducts, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { vendors } = useVendors();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
   const showAddModal = isAddModalOpen || activeModal === "addProduct";
 
   // Form states
-  const initialFormState = { name: "", sku: "", category: "Bulk Materials", unitPrice: 0, leadTimeDays: 7, primaryVendor: "Acme Corp", stockStatus: "In Stock" as "In Stock" | "Low Stock" | "Out of Stock" | "Discontinued" };
+  const initialFormState = { name: "", sku: "", category: "Bulk Materials", unitPrice: 0, leadTimeDays: 7, primaryVendor: "", stockStatus: "In Stock" as "In Stock" | "Low Stock" | "Out of Stock" | "Discontinued" };
   const [formData, setFormData] = useState(initialFormState);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -91,6 +93,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.sku) return onShowToast("Please fill out name and SKU", "error");
+    if (!formData.primaryVendor) return onShowToast("Please select a vendor", "error");
     try {
       await addProduct(formData);
       onShowToast(`Successfully registered ${formData.name}!`, "success");
@@ -472,7 +475,20 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Primary Vendor</label>
-                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} placeholder="e.g. Acme Corp" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
+                  <select 
+                    required 
+                    value={formData.primaryVendor} 
+                    onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} 
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  >
+                    <option value="" disabled>Select a Vendor</option>
+                    {vendors.map(v => (
+                      <option key={v.id} value={v.uuid}>{v.name}</option>
+                    ))}
+                  </select>
+                  {vendors.length === 0 && (
+                    <p className="text-[10px] text-rose-500 font-medium ml-1">You must add a vendor first before creating products.</p>
+                  )}
                 </div>
               </div>
 

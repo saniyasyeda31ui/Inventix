@@ -1,24 +1,27 @@
 import React, { useState } from "react";
-import { 
+import {
   Building2, MapPin, Award, CheckCircle, CreditCard, Shield, Sliders
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 interface CompanySectionProps {
   onShowToast: (msg: string, type?: "success" | "info") => void;
 }
 
 export default function CompanySection({ onShowToast }: CompanySectionProps) {
-  const [profile, setProfile] = useState({
-    name: "Acme Industrial Sourcing Hub",
-    legalName: "Acme Sourcing Partners LLC",
-    taxId: "TX-99824-A90",
-    dunsNumber: "23-991-8274",
-    hqAddress: "100 Industrial Pkwy, Suite 400, Chicago, IL 60611",
-    subscriptionPlan: "Enterprise Gold ERP Package",
-    billingCycle: "Annual (Next renewal Jan 15, 2027)",
-    paymentMethod: "Corporate Wire Transfer •••• 9811",
-    dataRegion: "US Central (Iowa) - Multi-Zone Replication"
-  });
+  const { profile: authProfile, companyData } = useAuth();
+  
+  const profile = {
+    name: companyData?.name || authProfile?.organization || "",
+    legalName: companyData?.name ? `${companyData.name} LLC` : (authProfile?.organization ? `${authProfile.organization} LLC` : ""),
+    taxId: companyData?.tax_identifier || "N/A",
+    dunsNumber: "23-991-8274", // Placeholder as it's not in DB yet
+    hqAddress: companyData ? `${companyData.address_line_1}, ${companyData.city}, ${companyData.state} ${companyData.postal_code}, ${companyData.country}` : "N/A",
+    subscriptionPlan: "Enterprise Gold ERP Package", // Placeholder
+    billingCycle: "Annual (Next renewal Jan 15, 2027)", // Placeholder
+    paymentMethod: "Corporate Wire Transfer •••• 9811", // Placeholder
+    dataRegion: "US Central (Iowa) - Multi-Zone Replication" // Placeholder
+  };
 
   const handleTriggerReSync = () => {
     onShowToast("Dispatched organizational metadata sync across 5 global hubs.", "success");
@@ -26,7 +29,7 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -40,14 +43,14 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
 
       {/* Profile Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Entity Card */}
         <div className="lg:col-span-2 p-6 md:p-8 rounded-[32px] border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05),0_30px_80px_-20px_rgba(99,102,241,0.06),inset_0_1px_1px_rgba(255,255,255,1)] space-y-6 card-hover-effect">
           <div className="flex items-center justify-between border-b border-indigo-900/10 pb-4">
             <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-widest">
               Organizational Metadata
             </h2>
-            <button 
+            <button
               onClick={handleTriggerReSync}
               className="text-[11px] text-indigo-500 hover:text-indigo-600 font-bold uppercase tracking-widest cursor-pointer transition-colors"
             >
@@ -56,7 +59,7 @@ export default function CompanySection({ onShowToast }: CompanySectionProps) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-            
+
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Organization Name</span>
               <span className="text-[15px] font-black text-slate-900 block">{profile.name}</span>

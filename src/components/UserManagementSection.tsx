@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldAlert, Search, RefreshCw, UserPlus, MoreVertical, Edit2, Key, XCircle, CheckCircle, Trash2, X, Shield, CheckCircle2 } from 'lucide-react';
 import { useAdminUsers, AdminUser } from '../hooks/useAdminUsers';
 import { AppRole } from '../lib/rbac';
+import { useAuth } from '../context/AuthContext';
 import SkeletonLoader from './SkeletonLoader';
 
 interface UserManagementSectionProps {
@@ -9,6 +10,7 @@ interface UserManagementSectionProps {
 }
 
 export default function UserManagementSection({ onShowToast }: UserManagementSectionProps) {
+  const { profile } = useAuth();
   const { users, loading, error, refreshUsers, provisionUser, updateRole, toggleStatus, deleteUser, resetPassword } = useAdminUsers();
   const [search, setSearch] = useState("");
   const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
@@ -40,6 +42,7 @@ export default function UserManagementSection({ onShowToast }: UserManagementSec
         title: formData.title,
         role: formData.role,
         status: formData.status,
+        organization: profile?.organization || 'Acme Sourcing Hub',
         redirectTo: window.location.origin + '/accept-invitation'
       });
       onShowToast("User provisioned successfully! An invite email has been sent.", "success");

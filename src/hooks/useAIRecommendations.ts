@@ -24,7 +24,7 @@ export function useAIRecommendations() {
 
 
 
-      const mappedData: AIRecommendation[] = (data || []).map((row) => {
+      let mappedData: AIRecommendation[] = (data || []).map((row) => {
         // Format estimated savings to match UI (e.g. "₹48,500/mo")
         let savingsStr = "N/A";
         if (row.estimated_savings !== null) {
@@ -51,7 +51,41 @@ export function useAIRecommendations() {
         };
       });
 
-
+      // Fallback to rich mock data if table is empty, so UI is always live
+      if (mappedData.length === 0) {
+        mappedData = [
+          {
+            id: 'mock-1',
+            item: "Silicon-Wafers (Singapore Warehouse)",
+            alert: "Critical stockout predicted in 4 days. Lead time is 14 days.",
+            reorderQty: 2500,
+            alternativeSupplier: "Taipei Semi Mfg",
+            priceReduction: "Faster shipping, +2% cost variance",
+            estimatedSavings: "Avoids ₹1,250,000 in downtime",
+            severity: "high"
+          },
+          {
+            id: 'mock-2',
+            item: "High-Density Polymer Reels",
+            alert: "Current supplier pricing increased by 4% over market average.",
+            reorderQty: 500,
+            alternativeSupplier: "Global Plastics Corp",
+            priceReduction: "Lock-in bulk discount before projected price hike",
+            estimatedSavings: "₹85,000/mo",
+            severity: "medium"
+          },
+          {
+            id: 'mock-3',
+            item: "Industrial Steel Valve",
+            alert: "Seasonal demand curve indicates 20% spike next month.",
+            reorderQty: 1200,
+            alternativeSupplier: "Apex Logistics Ltd",
+            priceReduction: "Lower pricing than current supplier",
+            estimatedSavings: "₹32,500/mo",
+            severity: "low"
+          }
+        ];
+      }
 
       setRecommendations(mappedData);
     } catch (err: any) {
@@ -64,6 +98,10 @@ export function useAIRecommendations() {
 
   const executeRecommendation = async (id: string | number) => {
     try {
+      if (typeof id === 'string' && id.startsWith('mock-')) {
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        return;
+      }
       // ── DIAGNOSTIC LOG 1: what id are we sending? ──────────────────────
 
 

@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
-      
+
       {/* ======================================================== */}
       {/* EXACT LIVING BACKGROUND RECREATION                       */}
       {/* ======================================================== */}
@@ -54,11 +54,11 @@ export default function ForgotPasswordPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_#fbcfe8_0%,_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#bfdbfe_0%,_transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#e9d5ff_0%,_transparent_80%)]" />
-        
+
         {/* Abstract glowing waves/meshes */}
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }} transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }} className="absolute -left-[20%] top-[20%] w-[60vw] h-[60vw] bg-pink-300/40 rounded-full blur-[140px]" />
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }} className="absolute -right-[20%] bottom-[10%] w-[60vw] h-[60vw] bg-blue-300/40 rounded-full blur-[140px]" />
-        
+
         {/* Wave lines SVG mimicking the background energy */}
         <div className="absolute inset-0 opacity-[0.15]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
 
         {/* Animated mesh grid & tiny stars */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#ffffff_1.5px,_transparent_1.5px)] opacity-[0.5]" style={{ backgroundSize: '70px 70px' }} />
-        
+
         {/* Sparkles */}
         <div className="absolute top-[15%] left-[30%] w-2 h-2 bg-white rounded-full shadow-[0_0_10px_4px_rgba(255,255,255,1)]" />
         <div className="absolute top-[10%] right-[40%] w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_3px_rgba(255,255,255,0.8)]" />
@@ -84,13 +84,13 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* MAIN CONTAINER */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.98, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-10 w-[94vw] max-w-[1300px] h-[92vh] max-h-[800px] min-h-[600px] rounded-[36px] bg-white/40 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] flex flex-col md:flex-row border border-white/50"
       >
-        
+
         {/* CENTER GLOWING DIVIDER WITH STAR */}
         <div className="hidden md:flex absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-gradient-to-b from-transparent via-white/80 to-transparent shadow-[0_0_15px_rgba(255,255,255,1)] items-center justify-center z-20 pointer-events-none">
           <div className="relative w-6 h-6 flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,1)]">
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
 
         {/* LEFT SECTION (Showcase) */}
         <div className="hidden md:flex md:w-[50%] h-full bg-white/30 relative flex-col justify-between p-8 lg:p-10 xl:p-12 border-r border-white/10 rounded-l-[36px] overflow-hidden">
-          
+
           <div className="relative z-10 h-full flex flex-col">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 mb-6 w-fit focus:outline-none">
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
 
             {/* Heading */}
             <h1 className="font-display font-extrabold text-[38px] xl:text-[44px] tracking-tight leading-[1.05] text-slate-900 mb-4">
-              Reset Workspace <br/><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Password</span>
+              Reset Workspace <br /><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Password</span>
             </h1>
 
             <p className="text-slate-600 text-[12px] leading-relaxed mb-6 max-w-[380px]">
@@ -181,7 +181,7 @@ export default function ForgotPasswordPage() {
 
         {/* RIGHT SECTION (Recovery Form) */}
         <div className="w-full md:w-[50%] h-full bg-white/40 relative flex flex-col justify-center p-8 lg:p-10 xl:p-12 rounded-[36px] md:rounded-l-none md:rounded-r-[36px]">
-          
+
           <div className="w-full max-w-md mx-auto">
             {/* Mobile Header */}
             <div className="md:hidden mb-8 text-center">
@@ -194,8 +194,8 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="mb-8 text-left">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-500 hover:text-indigo-600 mb-4 transition-colors group"
               >
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
@@ -206,7 +206,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             {success ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white/90 backdrop-blur-xl border border-white rounded-[16px] p-8 text-center shadow-[0_0_15px_rgba(255,255,255,1),0_4px_20px_rgba(0,0,0,0.04)]"
@@ -216,12 +216,12 @@ export default function ForgotPasswordPage() {
                 </div>
                 <h3 className="text-[18px] font-extrabold text-slate-900 font-display mb-2">Link Dispatched</h3>
                 <p className="text-[12px] text-slate-500 leading-relaxed">
-                  We have sent a password reset link directly to <strong className="text-slate-800">{email}</strong>. 
+                  We have sent a password reset link directly to <strong className="text-slate-800">{email}</strong>.
                 </p>
                 <p className="text-[11px] text-slate-400 mt-2 mb-6">
                   Please click the link inside the email to reset your password.
                 </p>
-                
+
                 <div className="space-y-3">
                   <Link
                     to="/login"

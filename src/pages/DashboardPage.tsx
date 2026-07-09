@@ -212,7 +212,7 @@ export default function DashboardPage() {
           </ErrorBoundary>
         );
       case "Settings":
-        if (!permissions?.canAccessEmployees) return renderAccessDenied();
+        if (role !== 'admin') return renderAccessDenied();
         return <SettingsSection onShowToast={showToast} />;
       default:
         return (
@@ -261,7 +261,7 @@ export default function DashboardPage() {
         { name: "Company", icon: Building2, permission: permissions?.canAccessEmployees }, // Assuming company is grouped with employees
         { name: "User Management", icon: ShieldAlert, permission: role === 'admin' },
         { name: "Payments", icon: CreditCard, permission: permissions?.canAccessPayments },
-        { name: "Settings", icon: Settings, permission: permissions?.canAccessEmployees } // Grouping settings with admin privileges
+        { name: "Settings", icon: Settings, permission: role === 'admin' }
       ]
     }
   ];
@@ -539,8 +539,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 {/* Secondary Anchor */}
-                <p className="text-[10px] text-slate-500/90 font-bold mt-1 tracking-wide">
-                  {profile?.organization || 'Acme Sourcing Hub'}
+                <p className="text-[10px] text-slate-500/90 font-bold mt-1 tracking-wide truncate max-w-[180px]" title={profile?.organization || ''}>
+                  {profile?.organization || ''}
                 </p>
               </div>
             </div>
@@ -606,9 +606,8 @@ export default function DashboardPage() {
                       className="absolute right-0 mt-3 w-56 bg-white/90 backdrop-blur-2xl border border-white rounded-[20px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] z-[70] p-2 space-y-1"
                     >
                       <div className="px-3 py-3 border-b border-slate-100 mb-2">
-                        <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Connected Profile</span>
-                        <span className="text-[13px] font-extrabold text-slate-900">Alexander S.</span>
-                        <span className="text-[11px] font-medium text-slate-500 block mt-0.5">alexander@acme.com</span>
+                        <span className="text-[13px] font-extrabold text-slate-900 capitalize">{profile?.full_name || ''}</span>
+                        <span className="text-[11px] font-medium text-slate-500 block mt-0.5">{profile?.email || ''}</span>
                       </div>
 
                       <button
@@ -663,7 +662,7 @@ export default function DashboardPage() {
               {/* Active breadcrumb context */}
               <div className="px-3 py-2.5 rounded-[14px] bg-white/60 border border-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] text-[11px] font-bold text-slate-500 flex items-center gap-2">
                 <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                <span>{profile?.organization || 'Inventix'}</span>
+                <span>{profile?.organization || ''}</span>
                 <span className="text-slate-300">/</span>
                 <span className="text-slate-800 tracking-wide">{activeTab}</span>
               </div>
@@ -716,11 +715,11 @@ export default function DashboardPage() {
             <div className="p-4 rounded-[20px] border border-white/80 bg-white/60 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] flex items-center gap-3 shrink-0 mt-4 relative z-10 transition-transform hover:-translate-y-0.5 duration-300">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/20 flex items-center justify-center text-xs font-extrabold text-white uppercase tracking-wider relative overflow-hidden">
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%,100%_100%] animate-[shimmer_2s_infinite]" />
-                {profile?.full_name ? profile.full_name.substring(0, 2).toUpperCase() : 'AS'}
+                {profile?.full_name ? profile.full_name.substring(0, 2).toUpperCase() : ''}
               </div>
               <div className="truncate flex-1">
-                <span className="text-[13px] font-bold text-slate-800 block truncate tracking-tight">{profile?.full_name || 'Alexander S.'}</span>
-                <span className="text-[11px] font-medium text-slate-500 block capitalize">{profile?.role ? profile.role.replace(/_/g, ' ') : 'Lead Admin'}</span>
+                <span className="text-[13px] font-bold text-slate-800 block truncate tracking-tight">{profile?.full_name || ''}</span>
+                <span className="text-[11px] font-medium text-slate-500 block capitalize">{profile?.role ? profile.role.replace(/_/g, ' ') : ''}</span>
               </div>
             </div>
           </aside>

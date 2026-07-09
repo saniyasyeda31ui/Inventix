@@ -50,20 +50,15 @@ export function useProducts() {
   }, []);
 
   const addProduct = async (productData: Omit<ProductItem, 'id'>) => {
-    const newId = `PRD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-    const newProduct = { ...productData, id: newId } as ProductItem;
-    
     const previousProducts = [...products];
-    setProducts((prev) => [...prev, newProduct]);
 
     const dbPayload = {
-      id: newId,
       sku: productData.sku,
       product_name: productData.name,
       category: productData.category,
       unit_price: productData.unitPrice,
       lead_time_days: productData.leadTimeDays,
-      vendor_id: productData.primaryVendor,
+      vendor_id: productData.primaryVendor, // This is expected to be a UUID
     };
 
     console.log('[useProducts] CREATE Payload:', dbPayload);
@@ -77,14 +72,13 @@ export function useProducts() {
     console.log('[useProducts] CREATE Supabase response:', { data, error, status, insertedRow: data });
 
     if (error) {
-      setProducts(previousProducts);
       console.error('[useProducts] CREATE Error:', error);
       fetchProducts();
       throw new Error(error.message);
     }
     
-    setProducts((prev) => prev.map(p => p.id === newId ? {
-      ...p,
+    // Add the successfully created product from the backend
+    setProducts((prev) => [...prev, {
       id: data.id,
       sku: data.sku,
       name: data.product_name,
@@ -93,7 +87,7 @@ export function useProducts() {
       leadTimeDays: data.lead_time_days,
       primaryVendor: data.vendor_id,
       stockStatus: 'In Stock',
-    } : p));
+    }]);
 
     return data;
   };
