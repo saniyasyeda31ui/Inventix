@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   CreditCard, Search, RefreshCw, ChevronLeft, ChevronRight, 
-  MoreVertical, ShieldCheck, AlertCircle, Plus, Edit2, Trash2, X, Check
+  MoreVertical, ShieldCheck, AlertCircle, Plus, Edit2, Trash2, X, Check, CheckCircle2
 } from "lucide-react";
 import { PaymentItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -302,7 +302,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -381,134 +381,142 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#0a0e1a] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] shadow-2xl flex flex-col">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0" onClick={handleCloseModalInternal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
             
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/20">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-indigo-400" />
-                {modalMode === "add" ? "Create New Payment" : "Edit Payment"}
-              </h2>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <CreditCard className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
+                  {modalMode === "add" ? "Record Payment" : "Edit Payment"}
+                </h3>
+              </div>
               <button 
                 onClick={handleCloseModalInternal}
-                className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer p-1"
+                className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2"
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
-              <form id="payment-form" onSubmit={handleSubmit} className="space-y-4 text-xs">
-                
-                {/* Purchase Order Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Linked Purchase Order</label>
-                  <select
-                    required
-                    value={formData.purchase_order_id}
-                    onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
-                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
-                  >
-                    <option value="" disabled>Select a Purchase Order...</option>
-                    {purchaseOrders.map((po) => (
-                      <option key={po.uuid || po.id} value={po.uuid || po.id}>
-                        {po.id} - {po.vendorName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <form id="payment-form" onSubmit={handleSubmit} className="space-y-4">
+              
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Linked Purchase Order</label>
+                <select
+                  required
+                  value={formData.purchase_order_id}
+                  onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a Purchase Order...</option>
+                  {purchaseOrders.map((po) => (
+                    <option key={po.uuid || po.id} value={po.uuid || po.id}>
+                      {po.id} - {po.vendorName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Vendor</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Vendor</label>
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={formData.vendorName || "Auto-populated"} 
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-500 focus:outline-none cursor-not-allowed"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Amount Paid ($)</label>
                   <input 
-                    type="text" 
-                    readOnly 
-                    value={formData.vendorName || "Auto-populated"} 
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-500 focus:outline-none cursor-not-allowed"
+                    required
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={formData.amount_paid}
+                    onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Amount Paid ($)</label>
-                    <input 
-                      required
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={formData.amount_paid}
-                      onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Due Date</label>
-                    <input 
-                      required
-                      type="date"
-                      value={formData.dueDate}
-                      onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Due Date</label>
+                  <input 
+                    required
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Payment Method</label>
-                    <select
-                      required
-                      value={formData.method}
-                      onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="ACH">ACH</option>
-                      <option value="ACH Transfer">ACH Transfer</option>
-                      <option value="Wire">Wire</option>
-                      <option value="Wire Transfer">Wire Transfer</option>
-                      <option value="Check">Check</option>
-                      <option value="Credit Card">Credit Card</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Status</label>
-                    <select
-                      required
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="Unpaid">Unpaid</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Paid">Paid</option>
-                      <option value="Overdue">Overdue</option>
-                      <option value="Disputed">Disputed</option>
-                    </select>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Payment Method</label>
+                  <select
+                    required
+                    value={formData.method}
+                    onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  >
+                    <option value="ACH">ACH</option>
+                    <option value="ACH Transfer">ACH Transfer</option>
+                    <option value="Wire">Wire</option>
+                    <option value="Wire Transfer">Wire Transfer</option>
+                    <option value="Check">Check</option>
+                    <option value="Credit Card">Credit Card</option>
+                  </select>
                 </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Status</label>
+                  <select
+                    required
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Disputed">Disputed</option>
+                  </select>
+                </div>
+              </div>
 
-              </form>
-            </div>
-
-            <div className="p-4 border-t border-slate-800 bg-slate-900/20 flex justify-end gap-3">
-              <button 
-                type="button"
-                onClick={handleCloseModalInternal}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                form="payment-form"
-                disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-lg shadow-indigo-900/20 flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                {modalMode === "add" ? "Create Payment" : "Save Changes"}
-              </button>
-            </div>
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button 
+                  type="button"
+                  onClick={handleCloseModalInternal}
+                  className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  form="payment-form"
+                  disabled={isSubmitting}
+                  className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">
+                    {modalMode === "add" ? "Record Payment" : "Save Changes"}
+                  </span>
+                  {isSubmitting ? (
+                    <RefreshCw className="w-4 h-4 animate-spin relative z-10" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
+                  )}
+                </button>
+              </div>
+            </form>
             
           </div>
         </div>

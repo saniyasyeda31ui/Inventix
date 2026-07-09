@@ -31,7 +31,7 @@ export default function ReportsSection({ onShowToast }: ReportsSectionProps) {
     recordExport
   } = useReports(config);
 
-  const categories = ["Inventory", "Purchase", "Vendor", "Payment", "Employee"];
+  const categories = ["Inventory", "Purchase", "Vendor", "Payment"];
   const dateRanges = ["All Time", "Last 30 Days", "Last 90 Days", "Year to Date"];
 
   const handleExportCSV = async () => {

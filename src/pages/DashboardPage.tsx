@@ -25,7 +25,6 @@ import PurchaseOrdersSection from "../components/PurchaseOrdersSection";
 import ReportsSection from "../components/ReportsSection";
 import AIInsightsSection from "../components/AIInsightsSection";
 import CompanySection from "../components/CompanySection";
-import EmployeesSection from "../components/EmployeesSection";
 import UserManagementSection from "../components/UserManagementSection";
 import PaymentsSection from "../components/PaymentsSection";
 import SettingsSection from "../components/SettingsSection";
@@ -198,13 +197,6 @@ export default function DashboardPage() {
       case "Company":
         if (!permissions?.canAccessEmployees) return renderAccessDenied();
         return <CompanySection onShowToast={showToast} />;
-      case "Employees":
-        if (!permissions?.canAccessEmployees) return renderAccessDenied();
-        return (
-          <ErrorBoundary>
-            <EmployeesSection activeModal={activeModal} onCloseModal={() => setActiveModal(null)} onShowToast={showToast} />
-          </ErrorBoundary>
-        );
       case "User Management":
         if (role !== 'admin') return renderAccessDenied();
         return (
@@ -267,7 +259,6 @@ export default function DashboardPage() {
       category: "Administration",
       items: [
         { name: "Company", icon: Building2, permission: permissions?.canAccessEmployees }, // Assuming company is grouped with employees
-        { name: "Employees", icon: Users, permission: permissions?.canAccessEmployees },
         { name: "User Management", icon: ShieldAlert, permission: role === 'admin' },
         { name: "Payments", icon: CreditCard, permission: permissions?.canAccessPayments },
         { name: "Settings", icon: Settings, permission: permissions?.canAccessEmployees } // Grouping settings with admin privileges

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { 
   Sliders, Search, Filter, RefreshCw, ChevronLeft, ChevronRight, 
-  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle, Trash2
+  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle, Trash2, CheckCircle2
 } from "lucide-react";
 import { LiveStockItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -280,7 +280,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -363,93 +363,101 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
 
       {/* Receive Stock Modal */}
       {showReceiveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-lg bg-[#050914] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)] animate-slideIn">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-white/50 backdrop-blur-md">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0" onClick={closeModal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                  <Package className="w-4 h-4 text-indigo-400" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <Package className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">Receive Stock</h2>
-                  <p className="text-[10px] text-slate-600">Add or adjust inventory balances.</p>
+                  <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">
+                    Receive Inventory
+                  </h3>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Add or adjust stock</p>
                 </div>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-white/80 text-slate-600 hover:text-slate-900 transition-colors">
-                <X className="w-4 h-4" />
+              <button 
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
             
-            <form onSubmit={handleReceiveSubmit} className="p-6 space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Product / Material</label>
-                  <select
+            <form onSubmit={handleReceiveSubmit} className="space-y-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Product / Material</label>
+                <select
+                  required
+                  value={formData.productId}
+                  onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a product...</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Destination Warehouse</label>
+                <select
+                  required
+                  value={formData.warehouseId}
+                  onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a warehouse facility...</option>
+                  {warehouseData.map(w => (
+                    <option key={w.uuid || w.id} value={w.uuid || w.id}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Quantity to Receive</label>
+                  <input
+                    type="number"
                     required
-                    value={formData.productId}
-                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-white/60 text-slate-900 focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="" disabled>Select a product...</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                    ))}
-                  </select>
+                    min="0"
+                    value={formData.qtyToAdd}
+                    onChange={(e) => setFormData({ ...formData, qtyToAdd: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Destination Warehouse</label>
-                  <select
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Safety Stock Threshold</label>
+                  <input
+                    type="number"
                     required
-                    value={formData.warehouseId}
-                    onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-white/60 text-slate-900 focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="" disabled>Select a warehouse facility...</option>
-                    {warehouseData.map(w => (
-                      <option key={w.uuid || w.id} value={w.uuid || w.id}>{w.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Quantity to Receive</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.qtyToAdd}
-                      onChange={(e) => setFormData({ ...formData, qtyToAdd: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-white/60 text-slate-900 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Safety Stock Threshold</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.safetyStockQty}
-                      onChange={(e) => setFormData({ ...formData, safetyStockQty: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-white/60 text-slate-900 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
+                    min="0"
+                    value={formData.safetyStockQty}
+                    onChange={(e) => setFormData({ ...formData, safetyStockQty: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800 mt-6">
-                <button
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button 
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-800 hover:bg-white/80 transition-colors"
+                  className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button
+                <button 
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer"
                 >
-                  Process Receipt
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">Receive Inventory</span>
+                  <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </form>

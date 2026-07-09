@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { 
-  Warehouse, Search, Filter, Plus, Mail, User, MapPin, 
-  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders, RefreshCw, AlertCircle, Trash2
+import {
+  Warehouse, Search, Filter, Plus, Mail, User, MapPin,
+  Layers, MoreVertical, Edit2, ShieldAlert, CheckCircle, Sliders, RefreshCw, AlertCircle, Trash2, X, CheckCircle2
 } from "lucide-react";
 import { WarehouseItem } from "../data/dashboardData";
 import { useWarehouses } from "../hooks/useWarehouses";
@@ -67,7 +67,7 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
   };
 
   const filteredWarehouses = warehouses.filter(wh => {
-    const matchesSearch = 
+    const matchesSearch =
       wh.name.toLowerCase().includes(search.toLowerCase()) ||
       wh.location.toLowerCase().includes(search.toLowerCase()) ||
       wh.manager.toLowerCase().includes(search.toLowerCase());
@@ -114,7 +114,7 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -140,7 +140,7 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
 
       {/* Filters Bar */}
       <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col md:flex-row gap-4 justify-between items-center">
-        
+
         {/* Search */}
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -167,7 +167,7 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
             <option value="Maintenance">Maintenance</option>
           </select>
 
-          <button 
+          <button
             onClick={() => {
               setSearch("");
               setStatusFilter("All");
@@ -189,8 +189,8 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
           <div className="flex flex-col">
             <span className="font-semibold text-rose-300">Data Fetch Error</span>
             <span className="leading-relaxed mt-1 text-xs">{error}</span>
-            <button 
-              onClick={refreshWarehouses} 
+            <button
+              onClick={refreshWarehouses}
               className="mt-2 w-fit text-xs font-semibold px-3 py-1.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition-colors"
             >
               Retry Connection
@@ -227,82 +227,81 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
           ))
         ) : filteredWarehouses.length > 0 ? (
           filteredWarehouses.map((wh) => (
-            <div 
+            <div
               key={wh.id}
               className="p-5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl hover:border-indigo-500/20 hover:bg-white/60/40 transition-all flex flex-col justify-between space-y-4 relative shadow-xl shadow-slate-900/5 hover:shadow-2xl"
             >
-              
+
               {/* Header inside Card */}
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{wh.id}</span>
-                    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[10px] font-bold uppercase tracking-widest border ${
-                      wh.status === "Active" 
+                    <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[10px] font-bold uppercase tracking-widest border ${wh.status === "Active"
                         ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
                         : wh.status === "At Capacity"
                           ? "bg-rose-500/10 text-rose-800 border-rose-500/20"
                           : "bg-amber-500/10 text-amber-800 border-amber-500/20"
-                    }`}>
+                      }`}>
                       {wh.status}
                     </span>
                   </div>
                   <h3 className="text-base font-extrabold text-slate-950 tracking-tight">{wh.name}</h3>
                 </div>
 
-                  {permissions?.canManageWarehouses && (
-                    <div className="relative">
-                      <button 
-                        onClick={() => setActiveMenuId(activeMenuId === wh.id ? null : wh.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                {permissions?.canManageWarehouses && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setActiveMenuId(activeMenuId === wh.id ? null : wh.id)}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
 
-                      {activeMenuId === wh.id && (
-                        <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
-                          <button
-                            onClick={() => handleOptimizeLayout(wh.name)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
-                          >
-                            <Sliders className="w-3.5 h-3.5 text-indigo-400" />
-                            <span>Optimize Layout</span>
-                          </button>
-                          <div className="h-px bg-slate-800 my-1" />
-                          <button
-                            onClick={() => handleUpdateStatus(wh.id, "Active")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Set Active</span>
-                          </button>
-                          <button
-                            onClick={() => handleUpdateStatus(wh.id, "At Capacity")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
-                          >
-                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Set At Capacity</span>
-                          </button>
-                          <div className="h-px bg-slate-800 my-1" />
-                          <button
-                            onClick={() => handleEditClick(wh)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
-                          >
-                            <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
-                            <span>Edit Warehouse</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(wh.id, wh.name)}
-                            className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                            <span>Delete Facility</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    {activeMenuId === wh.id && (
+                      <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                        <button
+                          onClick={() => handleOptimizeLayout(wh.name)}
+                          className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
+                        >
+                          <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Optimize Layout</span>
+                        </button>
+                        <div className="h-px bg-slate-800 my-1" />
+                        <button
+                          onClick={() => handleUpdateStatus(wh.id, "Active")}
+                          className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Set Active</span>
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStatus(wh.id, "At Capacity")}
+                          className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
+                        >
+                          <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Set At Capacity</span>
+                        </button>
+                        <div className="h-px bg-slate-800 my-1" />
+                        <button
+                          onClick={() => handleEditClick(wh)}
+                          className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Edit Warehouse</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(wh.id, wh.name)}
+                          className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Delete Facility</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Gauge Progress bar */}
               <div className="space-y-1.5">
@@ -313,10 +312,9 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
                   </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-white/60 overflow-hidden shadow-inner border border-white/60">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      wh.capacityUsed >= 90 ? "bg-rose-500" : wh.capacityUsed >= 75 ? "bg-amber-500" : "bg-indigo-500"
-                    }`}
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${wh.capacityUsed >= 90 ? "bg-rose-500" : wh.capacityUsed >= 75 ? "bg-amber-500" : "bg-indigo-500"
+                      }`}
                     style={{ width: `${wh.capacityUsed}%` }}
                   />
                 </div>
@@ -328,7 +326,7 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
                   <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                   <span className="truncate">{wh.location}</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2 text-slate-600 font-medium">
                   <User className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                   <span>Mgr: {wh.manager}</span>
@@ -351,34 +349,50 @@ export default function WarehousesSection({ onShowToast, onOpenModal, activeModa
 
       {/* Add / Edit Modal */}
       {(showAddModal || isEditModalOpen) && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center">
-          <div className="absolute inset-0 bg-white/60/80 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-md bg-[#050914] border border-white/60 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
-            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-white/60">
-                <Warehouse className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-900">{isEditModalOpen ? "Edit Warehouse Facility" : "Add Physical Warehouse Facility"}</h3>
-              </div>
-              <div className="space-y-3 text-xs">
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Warehouse Name</label>
-                  <input required type="text" placeholder="e.g. Frankfurt Storage Hub" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Geographic Territory</label>
-                    <input required type="text" placeholder="e.g. Germany" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={closeModal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-5">
+              
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <Warehouse className="w-5 h-5 text-white" />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Total Sq Ft (Capacity)</label>
-                    <input required type="number" placeholder="e.g. 100000" min="0" value={formData.totalAreaSqFt || ''} onChange={e => setFormData({ ...formData, totalAreaSqFt: Number(e.target.value) })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
+                  <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
+                    {isEditModalOpen ? "Edit Warehouse" : "Add Warehouse"}
+                  </h3>
+                </div>
+                <button type="button" onClick={closeModal} className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Warehouse Name</label>
+                  <input required type="text" placeholder="e.g. Frankfurt Storage Hub" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Geographic Territory</label>
+                    <input required type="text" placeholder="e.g. Germany" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Total Sq Ft (Capacity)</label>
+                    <input required type="number" placeholder="e.g. 100000" min="0" value={formData.totalAreaSqFt || ''} onChange={e => setFormData({ ...formData, totalAreaSqFt: Number(e.target.value) })} className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
                   </div>
                 </div>
               </div>
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">Cancel</button>
-                <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer">
-                  {isEditModalOpen ? "Save Changes" : "Confirm Storage Hub"}
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button type="button" onClick={closeModal} className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer">
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">{isEditModalOpen ? "Save Changes" : "Add Warehouse"}</span>
+                  <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </form>

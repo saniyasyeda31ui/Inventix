@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { 
-  Users, Search, Plus, AlertCircle, Trash2, MoreVertical, 
-  ShieldAlert, Award, RefreshCw, CheckCircle, Edit2
+import {
+  Users, Search, Plus, AlertCircle, Trash2, MoreVertical,
+  ShieldAlert, Award, RefreshCw, CheckCircle, Edit2, X, CheckCircle2
 } from "lucide-react";
 import { VendorItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -242,9 +242,8 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                     <td className="py-4 px-5 font-extrabold text-slate-950 text-sm">{v.name}</td>
                     <td className="py-4 px-5 font-medium text-slate-600 text-sm">{v.category}</td>
                     <td className="py-4 px-5 text-center font-extrabold font-mono text-slate-900 text-sm">
-                      <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded shadow-sm text-[11px] font-bold border ${
-                        v.score >= 90 ? "text-emerald-800 border-emerald-500/20 bg-emerald-500/10" : "text-amber-800 border-amber-500/20 bg-amber-500/10"
-                      }`}>
+                      <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded shadow-sm text-[11px] font-bold border ${v.score >= 90 ? "text-emerald-800 border-emerald-500/20 bg-emerald-500/10" : "text-amber-800 border-amber-500/20 bg-amber-500/10"
+                        }`}>
                         {v.score}/100
                       </span>
                     </td>
@@ -254,13 +253,12 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                       <span className="text-[11px] text-slate-500 font-medium block mt-0.5">{v.email}</span>
                     </td>
                     <td className="py-4 px-5">
-                      <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[11px] font-bold tracking-widest uppercase border ${
-                        v.status === "Preferred"
+                      <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[11px] font-bold tracking-widest uppercase border ${v.status === "Preferred"
                           ? "bg-indigo-500/10 text-indigo-800 border-indigo-500/20"
                           : v.status === "Approved"
                             ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
                             : "bg-amber-500/10 text-amber-800 border-amber-500/20"
-                      }`}>
+                        }`}>
                         {v.status}
                       </span>
                     </td>
@@ -269,7 +267,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
                         <div className="relative inline-block text-left">
                           <button
                             onClick={() => setActiveMenuId(activeMenuId === v.id ? null : v.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -333,80 +331,96 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
 
       {/* Modals */}
       {(showAddModal || isEditModalOpen) && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center">
-          <div className="absolute inset-0 bg-white/60/80 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-md bg-[#050914] border border-white/60 rounded-2xl p-6 shadow-2xl z-10">
-            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-white/60">
-                <Users className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-900">
-                  {isEditModalOpen ? "Edit Vendor Details" : "Register Vendor"}
-                </h3>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={closeModal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-5">
+              
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
+                    {isEditModalOpen ? "Edit Vendor" : "Add Vendor"}
+                  </h3>
+                </div>
+                <button type="button" onClick={closeModal} className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2">
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <div className="space-y-3 text-xs">
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Company Name</label>
+
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Company Name</label>
                   <input
                     required type="text" value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none"
+                    placeholder="e.g. Acme Corporation"
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Category</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Category</label>
                   <input
                     required type="text" value={formData.category}
                     onChange={e => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                    placeholder="e.g. Electronics, Logistics"
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Quality Score (0–100)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Quality Score (0–100)</label>
                     <input
                       required type="number" min="0" max="100" value={formData.score}
                       onChange={e => setFormData({ ...formData, score: Number(e.target.value) })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">On-Time % (e.g. 95%)</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">On-Time % (e.g. 95%)</label>
                     <input
                       required type="text" placeholder="95%" value={formData.onTime}
                       onChange={e => setFormData({ ...formData, onTime: e.target.value })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                     />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Contact Name</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Contact Name</label>
                   <input
                     type="text" value={formData.contact}
                     onChange={e => setFormData({ ...formData, contact: e.target.value })}
-                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                    placeholder="e.g. Jane Doe"
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Contact Email</label>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Contact Email</label>
                   <input
                     type="email" value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                    placeholder="e.g. jane.doe@acme.com"
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
               </div>
-              <div className="pt-2 flex items-center justify-end gap-3">
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200/60 mt-6">
                 <button
                   type="button" onClick={closeModal}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                  className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                  className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer"
                 >
-                  {isEditModalOpen ? "Save Changes" : "Register Vendor"}
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">{isEditModalOpen ? "Save Changes" : "Add Vendor"}</span>
+                  <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </form>

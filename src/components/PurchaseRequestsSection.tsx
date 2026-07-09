@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   ShoppingBag, Search, Filter, Plus, FileSpreadsheet, ThumbsUp, 
-  ThumbsDown, ChevronLeft, ChevronRight, RefreshCw, MoreVertical, Send, AlertCircle, Edit2, Trash2, X
+  ThumbsDown, ChevronLeft, ChevronRight, RefreshCw, MoreVertical, Send, AlertCircle, Edit2, Trash2, X, CheckCircle2
 } from "lucide-react";
 import { PurchaseRequest } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -328,7 +328,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === r.id ? null : r.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -410,14 +410,15 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       </div>
 
       {/* CRUD Modal for Purchase Requests */}
+      {/* CRUD Modal for Purchase Requests */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-white/60/80 backdrop-blur-md" 
+              className="absolute inset-0" 
               onClick={() => setIsModalOpen(false)} 
             />
             <motion.div 
@@ -425,29 +426,31 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="relative w-full max-w-lg bg-white/50 backdrop-blur-2xl border border-white/60 rounded-2xl shadow-2xl p-6 overflow-hidden shadow-[0_15px_30px_-10px_rgba(0,0,0,0.05)]"
+              className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp"
             >
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-white/60">
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag className="w-5 h-5 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-slate-900">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                      <ShoppingBag className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
                       {editingRequest ? "Edit Purchase Request" : "Create Purchase Request"}
                     </h3>
                   </div>
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-800">
-                    <X className="w-5 h-5" />
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2">
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
 
-                <div className="space-y-3 text-xs">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Requested Product</label>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Requested Product</label>
                     <select 
                       required
                       value={formData.product_id}
                       onChange={e => setFormData({ ...formData, product_id: e.target.value })}
-                      className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                     >
                       <option value="">Select a Product</option>
                       {products.map(p => (
@@ -456,20 +459,20 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Quantity</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Quantity</label>
                       <input 
                         required
                         type="number"
                         min="1"
                         value={formData.quantity}
                         onChange={e => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Estimated Cost ($)</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Estimated Cost ($)</label>
                       <input 
                         required
                         type="number"
@@ -477,18 +480,18 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         step="any"
                         value={formData.estimated_cost}
                         onChange={e => setFormData({ ...formData, estimated_cost: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Target Supplier</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Target Supplier</label>
                       <select 
                         value={formData.supplier}
                         onChange={e => setFormData({ ...formData, supplier: e.target.value })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       >
                         <option value="Global Plastics Corp">Global Plastics Corp</option>
                         <option value="Intel Sourcing">Intel Sourcing</option>
@@ -498,12 +501,12 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                       </select>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Requisition Priority</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Requisition Priority</label>
                       <select 
                         value={formData.priority}
                         onChange={e => setFormData({ ...formData, priority: e.target.value as any })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       >
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
@@ -513,13 +516,13 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Department Name</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Department Name</label>
                       <select 
                         value={formData.department}
                         onChange={e => setFormData({ ...formData, department: e.target.value })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       >
                         <option value="Procurement">Procurement</option>
                         <option value="Operations">Operations</option>
@@ -528,31 +531,33 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         <option value="Logistics">Logistics</option>
                       </select>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-slate-600 font-semibold uppercase tracking-wider block">Expected Delivery Target</label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Expected Delivery Target</label>
                       <input 
                         type="date" 
                         value={formData.expectedDelivery}
                         onChange={e => setFormData({ ...formData, expectedDelivery: e.target.value })}
-                        className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-end gap-2 text-xs">
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200/60 mt-6">
                   <button 
                     type="button" 
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-white/60 text-slate-600 cursor-pointer"
+                    className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit" 
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors cursor-pointer"
+                    className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer"
                   >
-                    {editingRequest ? "Save Changes" : "File Purchase Request"}
+                    <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                    <span className="relative z-10 text-[13px]">{editingRequest ? "Save Changes" : "Create Purchase Request"}</span>
+                    <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               </form>

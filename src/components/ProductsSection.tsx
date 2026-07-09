@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   Search, Filter, Plus, ChevronDown, MoreVertical, Edit2, Trash2,
-  RefreshCw, ChevronLeft, ChevronRight, Check, CheckCircle2, Box, AlertCircle
+  RefreshCw, ChevronLeft, ChevronRight, Check, CheckCircle2, Box, AlertCircle, X
 } from "lucide-react";
 import { ProductItem } from "../data/dashboardData";
 import { HighlightText, SortIndicator, EmptyState } from "./TableUX";
@@ -332,7 +332,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                         <div className="relative inline-block text-left">
                           <button
                             onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -426,48 +426,64 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
 
       {/* Add / Edit Modals */}
       {(showAddModal || isEditModalOpen) && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center">
-          <div className="absolute inset-0 bg-white/60/80 backdrop-blur-sm" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
-          <div className="relative w-full max-w-md bg-[#050914] border border-white/60 rounded-2xl p-6 shadow-2xl z-10 animate-slideUp">
-            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-white/60">
-                <Box className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-sm font-bold text-slate-900">{isEditModalOpen ? "Edit Product Details" : "Register Product SKU"}</h3>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
+            <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-5">
+              
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <Box className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
+                    {isEditModalOpen ? "Edit Product" : "Add Product"}
+                  </h3>
+                </div>
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2">
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <div className="space-y-3 text-xs">
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Product Name</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Product Name</label>
+                  <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Industrial Steel Valve" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">SKU</label>
-                    <input required type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder:text-slate-700 focus:border-indigo-500 focus:outline-none" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">SKU</label>
+                    <input required type="text" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} placeholder="e.g. VAL-001" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Category</label>
-                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Unit Price ($)</label>
-                    <input required type="number" min="0" step="any" value={formData.unitPrice} onChange={e => setFormData({ ...formData, unitPrice: Number(e.target.value) })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-600 font-semibold uppercase tracking-wider block">Lead Time (Days)</label>
-                    <input required type="number" min="0" value={formData.leadTimeDays} onChange={e => setFormData({ ...formData, leadTimeDays: Number(e.target.value) })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Category</label>
+                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Components" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-slate-600 font-semibold uppercase tracking-wider block">Primary Vendor</label>
-                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} className="w-full bg-white/60 border border-white/60 rounded-xl px-3.5 py-2.5 text-slate-900 focus:border-indigo-500 focus:outline-none" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Unit Price ($)</label>
+                    <input required type="number" min="0" step="any" value={formData.unitPrice} onChange={e => setFormData({ ...formData, unitPrice: Number(e.target.value) })} placeholder="0.00" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Lead Time (Days)</label>
+                    <input required type="number" min="0" value={formData.leadTimeDays} onChange={e => setFormData({ ...formData, leadTimeDays: Number(e.target.value) })} placeholder="14" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Primary Vendor</label>
+                  <input required type="text" value={formData.primaryVendor} onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} placeholder="e.g. Acme Corp" className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all" />
                 </div>
               </div>
-              <div className="pt-2 flex items-center justify-end gap-3">
-                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer">Cancel</button>
-                <button type="submit" className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer">
-                  {isEditModalOpen ? "Save Changes" : "Register SKU"}
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer">
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">{isEditModalOpen ? "Save Changes" : "Add Product"}</span>
+                  <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </form>
