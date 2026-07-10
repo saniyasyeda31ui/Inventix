@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { 
   Sparkles, AlertTriangle, TrendingUp, DollarSign, RefreshCw, 
   ChevronRight, ArrowRight, CheckCircle2, ShieldCheck, Zap, Factory
@@ -9,10 +9,12 @@ import { useAIRecommendations } from "../hooks/useAIRecommendations";
 
 interface AIInsightsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info" | "warning" | "error") => void;
+  onOpenModal: (modalName: string) => void;
+  onTabChange: (tabName: string) => void;
 }
 
-export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProps) {
-  const { recommendations: recs, loading, error, refreshRecommendations, executeRecommendation } = useAIRecommendations();
+export default function AIInsightsSection({ onShowToast, onOpenModal, onTabChange }: AIInsightsSectionProps) {
+  const { recommendations: recs, metrics, lastGenerated, loading, error, refreshRecommendations, executeRecommendation } = useAIRecommendations();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hoveredForecastPoint, setHoveredForecastPoint] = useState(false);
 
@@ -27,7 +29,29 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
   const handleApplySourcing = async (rec: AIRecommendation) => {
     try {
       await executeRecommendation(rec.id);
-      onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.item} from ${rec.alternativeSupplier}.`, "success");
+      
+      const alertMsg = rec.alert.toLowerCase();
+      if (alertMsg.includes("low stock")) {
+        onTabChange("Purchase Requests");
+        setTimeout(() => {
+          onOpenModal("createRequest");
+        }, 100);
+        onShowToast(`Dispatched reorder request for ${rec.item}.`, "success");
+      } else if (alertMsg.includes("overdue") || alertMsg.includes("po")) {
+        onTabChange("Purchase Orders");
+        onShowToast(`Routing to expedite PO for ${rec.item}.`, "info");
+      } else if (alertMsg.includes("overstock")) {
+        onTabChange("Inventory");
+        onShowToast(`Routing to Inventory to manage overstock for ${rec.item}.`, "info");
+      } else if (alertMsg.includes("vendor")) {
+        onTabChange("Vendors");
+        onShowToast(`Routing to Vendors to review performance.`, "info");
+      } else if (alertMsg.includes("warehouse")) {
+        onTabChange("Warehouses");
+        onShowToast(`Routing to Warehouses to manage utilization.`, "info");
+      } else {
+        onShowToast(`Strategy applied for ${rec.item}.`, "success");
+      }
     } catch (err: any) {
       onShowToast(err.message || "Failed to apply strategy.", "error");
     }
@@ -45,42 +69,49 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-400" />
+          <h1 className="font-display font-black text-3xl tracking-tight text-slate-900 flex items-center gap-2">
+            <Sparkles className="w-7 h-7 text-indigo-500" />
             <span>AI Procurement Assistant & Predictive Insights</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Autonomous demand forecasts, automatic stockout prevention algorithms, and smart cost-optimization opportunities.</p>
+          <p className="text-[13px] text-slate-500/80 mt-1 font-medium">Autonomous demand forecasts, automatic stockout prevention algorithms, and smart cost-optimization opportunities.</p>
         </div>
         
-        <button
-          onClick={handleRefreshAI}
-          disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-900 hover:border-slate-800 hover:bg-slate-900/60 text-slate-300 text-xs font-semibold cursor-pointer disabled:opacity-50 button-hover-scale"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-          <span>{isRefreshing ? "Calculating..." : "Recalculate Models"}</span>
-        </button>
+        <div className="flex flex-col items-end">
+          <button
+            onClick={handleRefreshAI}
+            disabled={isRefreshing}
+            className="premium-button-secondary disabled:opacity-50 mb-1"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>{isRefreshing ? "Calculating..." : "Recalculate AI Insights"}</span>
+          </button>
+          {lastGenerated && (
+            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+              Last Generated: {new Date(lastGenerated).toLocaleString()}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Potential Cost Savings</span>
-          <div className="text-2xl font-bold text-emerald-400 tracking-tight">$34,800/mo</div>
-          <p className="text-[10px] text-slate-400">Through strategic supplier switches and volume optimizations.</p>
+        <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Potential Cost Savings</span>
+          <div className="text-3xl font-black text-emerald-500 tracking-tight">${metrics.savings.toLocaleString()}</div>
+          <p className="text-xs font-medium text-slate-500/80">Identified tied-up capital and sourcing opportunities.</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Supply Chain Risk Score</span>
-          <div className="text-2xl font-bold text-indigo-400 tracking-tight">94.2 / 100</div>
-          <p className="text-[10px] text-slate-400">99.8% accurate lead-time prediction buffer active.</p>
+        <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Supply Chain Risk Score</span>
+          <div className="text-3xl font-black text-indigo-500 tracking-tight">{metrics.riskScore} / 100</div>
+          <p className="text-xs font-medium text-slate-500/80">Real-time assessment based on vendor and PO performance.</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-1 card-hover-effect">
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">Predicted Stockouts Avoided</span>
-          <div className="text-2xl font-bold text-white tracking-tight">12 SKUs</div>
-          <p className="text-[10px] text-slate-400">Automated buffer threshold triggered last 30 days.</p>
+        <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Predicted Stockouts Avoided</span>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{metrics.stockoutsAvoided} SKUs</div>
+          <p className="text-xs font-medium text-slate-500/80">Critical low-stock alerts identified successfully.</p>
         </div>
 
       </div>
@@ -107,14 +138,14 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
         
         {/* Sourcing Actions & Supplier Switching */}
         <div className="xl:col-span-2 space-y-4">
-          <h2 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest pl-1">
+          <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-widest pl-1">
             Supplier Recommendations & Reorder Triggers
           </h2>
 
           <div className="space-y-4">
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="p-5 rounded-2xl border bg-[#040815] border-slate-900/40 space-y-4 animate-pulse">
+                <div key={`skeleton-${i}`} className="p-5 rounded-2xl border bg-white/50 backdrop-blur-2xl border-white/40 space-y-4 animate-pulse">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-slate-800" />
                     <div className="h-5 w-48 rounded bg-slate-800" />
@@ -132,70 +163,71 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
               recs.map((r) => (
                 <div 
                   key={r.id}
-                  className={`p-5 rounded-2xl border bg-[#040815] transition-all flex flex-col justify-between gap-4 card-hover-effect ${
+                  className={`p-6 md:p-8 rounded-[32px] border bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05),0_30px_80px_-20px_rgba(99,102,241,0.06),inset_0_1px_1px_rgba(255,255,255,1)] flex flex-col justify-between gap-5 card-hover-effect relative overflow-hidden group ${
                     r.severity === "high" 
-                      ? "border-rose-500/10 hover:border-rose-500/20" 
+                      ? "!border-rose-500/30 hover:!border-rose-500/50" 
                       : r.severity === "medium" 
-                        ? "border-amber-500/10 hover:border-amber-500/20" 
-                        : "border-indigo-500/10 hover:border-indigo-500/20"
+                        ? "!border-amber-500/30 hover:!border-amber-500/50" 
+                        : "!border-indigo-500/30 hover:!border-indigo-500/50"
                   }`}
                 >
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-indigo-500/10 via-purple-500/5 to-transparent rounded-bl-full -z-10 group-hover:from-indigo-500/20 transition-all duration-1000 blur-3xl pointer-events-none" />
                   <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 p-1.5 rounded-lg border ${
+                    <div className={`mt-0.5 p-2 rounded-xl border ${
                       r.severity === "high" 
-                        ? "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+                        ? "bg-rose-500/10 border-rose-500/20 text-rose-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]" 
                         : r.severity === "medium"
-                          ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                          : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                          ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
+                          : "bg-indigo-500/10 border-indigo-500/20 text-indigo-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]"
                     }`}>
-                      {r.severity === "high" ? <AlertTriangle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                      {r.severity === "high" ? <AlertTriangle className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-200">{r.item}</h3>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.alert}</p>
+                      <h3 className="font-black text-slate-900 text-lg">{r.item}</h3>
+                      <p className="text-[13px] font-medium text-slate-500/90 mt-1 leading-relaxed">{r.alert}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Reorder Volume</span>
-                      <span className="text-sm font-bold text-slate-200">{r.reorderQty} units</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
+                    <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Reorder Volume</span>
+                      <span className="text-[15px] font-black text-slate-900">{r.reorderQty} units</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Alt. Supplier</span>
-                      <span className="text-sm font-bold text-slate-200">{r.alternativeSupplier}</span>
+                    <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Alt. Supplier</span>
+                      <span className="text-[15px] font-black text-slate-900">{r.alternativeSupplier}</span>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-900/50">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold mb-1">Proj. Savings</span>
-                      <span className="text-sm font-bold text-emerald-400">{r.estimatedSavings}</span>
+                    <div className="p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-white/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Proj. Savings</span>
+                      <span className="text-[15px] font-black text-emerald-600">{r.estimatedSavings}</span>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-400/90 font-medium bg-emerald-500/5 px-2 py-1 rounded">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 relative z-10">
+                    <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-bold uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full shadow-sm">
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>{r.priceReduction}</span>
                     </div>
                     
                     <button 
                       onClick={() => handleApplySourcing(r)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer button-hover-scale"
+                      className="premium-button-primary w-full sm:w-auto"
                     >
                       <span>Apply Strategy</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-12 rounded-2xl border border-slate-900 bg-[#040815] flex flex-col items-center justify-center text-center space-y-4">
+              <div className="p-12 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col items-center justify-center text-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-800">
                   <Sparkles className="w-8 h-8 text-slate-500" />
                 </div>
                 <div>
-                  <h3 className="text-slate-300 font-bold">No Active Recommendations</h3>
+                  <h3 className="text-slate-800 font-bold">No AI insights available yet</h3>
                   <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
-                    The AI engine has optimized your current inventory parameters. Check back later for newly computed sourcing strategies.
+                    Continue using Inventix to generate intelligent business insights.
                   </p>
                 </div>
               </div>
@@ -205,15 +237,18 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
 
         {/* Demand Forecast Widget */}
         <div className="space-y-4">
-          <h2 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-widest pl-1">
+          <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-widest pl-1">
             Predicted Demand Curve
           </h2>
 
-          <div className="p-5 rounded-2xl border border-slate-900 bg-[#040815] space-y-4 card-hover-effect">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider block">Seasonal Demand Forecast</span>
-              <h3 className="text-sm font-bold text-white">Q3/Q4 Production Wave</h3>
-              <p className="text-xs text-slate-500">Autonomous predictions modeling higher requirements in autumn.</p>
+          <div className="p-6 md:p-8 rounded-[32px] border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05),0_30px_80px_-20px_rgba(99,102,241,0.06),inset_0_1px_1px_rgba(255,255,255,1)] relative overflow-hidden space-y-5 card-hover-effect group">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/10 via-purple-500/5 to-transparent rounded-bl-full -z-10 group-hover:from-indigo-500/20 transition-all duration-1000 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-400/10 rounded-full blur-[60px] pointer-events-none" />
+
+            <div className="space-y-1 relative z-10">
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest block">Seasonal Demand Forecast</span>
+              <h3 className="text-lg font-black text-slate-900">Q3/Q4 Production Wave</h3>
+              <p className="text-[13px] font-medium text-slate-500/90">Autonomous predictions modeling higher requirements in autumn.</p>
             </div>
 
             {/* Custom SVG line plot with mouse triggers */}
@@ -278,9 +313,9 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
               </svg>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/10 space-y-2">
-              <h4 className="text-[11px] font-bold text-slate-200">Recommended Stock Buffers:</h4>
-              <ul className="space-y-1 text-[10px] text-slate-400 list-disc list-inside">
+            <div className="p-5 rounded-2xl bg-white/40 backdrop-blur-md border border-white/40 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] space-y-3 relative z-10">
+              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Recommended Stock Buffers:</h4>
+              <ul className="space-y-2 text-[13px] font-medium text-slate-700 list-disc list-inside">
                 <li>Increase Copper Safety margins by 15%</li>
                 <li>Lock pricing contracts for Polymers now</li>
                 <li>Verify air cargo lanes for wafer transit</li>

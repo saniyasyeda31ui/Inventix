@@ -20,13 +20,13 @@ export interface DashboardMetrics {
   lowStockCount: number;
   overstockCount: number;
   inventoryAccuracy: string;
-  
+
   // Procurement
   pendingPRCount: number;
   activePOCount: number;
   activeVendorsCount: number;
   monthlyProcurementSpend: number;
-  
+
   // Warehouse
   warehouseCapacity: number;
   warehouseUtilization: string;
@@ -98,113 +98,149 @@ export function useDashboardMetrics(role: AppRole) {
       }
 
       // 1. Inventory
-      if (isInventory) {
-        const { data: invData, error: invError } = await supabase
-          .from('inventory_balances')
-          .select(`on_hand_qty, safety_stock_qty, products ( unit_price )`);
-        if (!invError && invData) {
-          invData.forEach((row: any) => {
-            const qty = Number(row.on_hand_qty) || 0;
-            const price = Number(row.products?.unit_price) || 0;
-            m.totalInventoryValue += qty * price;
-            if (qty <= (Number(row.safety_stock_qty) || 0)) m.lowStockCount++;
-            if (qty > (Number(row.safety_stock_qty) || 0) * 3) m.overstockCount++; // Mock overstock logic
-          });
-        }
+      const { data: invData, error: invError } = await supabase
+        .from('inventory_balances')
+        .select(`on_hand_qty, safety_stock_qty, products ( unit_price )`);
+      if (!invError && invData) {
+        invData.forEach((row: any) => {
+          const qty = Number(row.on_hand_qty) || 0;
+          const price = Number(row.products?.unit_price) || 0;
+          m.totalInventoryValue += qty * price;
+          if (qty <= (Number(row.safety_stock_qty) || 0)) m.lowStockCount++;
+          if (qty > (Number(row.safety_stock_qty) || 0) * 3) m.overstockCount++;
+        });
       }
 
       // 2. Procurement
-      if (isProcurement) {
-        const { count: prCount } = await supabase.from('purchase_requests').select('*', { count: 'exact', head: true }).eq('status', 'Pending');
-        m.pendingPRCount = prCount || 0;
+      const { count: prCount } = await supabase.from('purchase_requests').select('*', { count: 'exact', head: true }).eq('status', 'Pending');
+      m.pendingPRCount = prCount || 0;
 
-        const { count: poCount } = await supabase.from('purchase_orders').select('*', { count: 'exact', head: true }).not('status', 'in', '("Completed","Cancelled")');
-        m.activePOCount = poCount || 0;
+      const { count: poCount } = await supabase.from('purchase_orders').select('*', { count: 'exact', head: true }).not('status', 'in', '("Completed","Cancelled")');
+      m.activePOCount = poCount || 0;
 
-        const { count: vendorCount } = await supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('status', 'Active');
-        m.activeVendorsCount = vendorCount || 0;
-        
-        // Month Spend logic reused for monthlyProcurementSpend
-        const { data: allPoData } = await supabase.from('purchase_orders').select('total_amount, promised_date');
-        const monthlySpend: Record<string, number> = {};
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        let currentMonthSpend = 0;
-        const currentMonthName = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
+      const { count: vendorCount } = await supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('status', 'Active');
+      m.activeVendorsCount = vendorCount || 0;
 
-        allPoData?.forEach(po => {
-          if (po.promised_date) {
-            const d = new Date(po.promised_date);
-            const mKey = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            monthlySpend[mKey] = (monthlySpend[mKey] || 0) + Number(po.total_amount);
-            if (mKey === currentMonthName) currentMonthSpend += Number(po.total_amount);
-          }
-        });
-        m.monthlyProcurementSpend = currentMonthSpend;
+      const { data: allPoData } = await supabase.from('purchase_orders').select('total_amount, promised_date');
+      const monthlySpend: Record<string, number> = {};
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      let currentMonthSpend = 0;
+      const currentMonthName = `${monthNames[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
-        const spendKeys = Object.keys(monthlySpend).slice(-6);
-        m.spendData = spendKeys.map((key, index) => {
-          const val = monthlySpend[key];
-          return {
-            month: key.split(' ')[0], 
-            spendValue: val,
-            spend: `$${val.toLocaleString()}`,
-            x: 75 + (index * 70),
-            y: 100, 
-            height: 100 
-          };
-        });
-        if (m.spendData.length === 0) {
-          m.spendData.push({ month: "No Data", spendValue: 0, spend: "$0", x: 75, y: 100, height: 10 });
+      allPoData?.forEach(po => {
+        if (po.promised_date) {
+          const d = new Date(po.promised_date);
+          const mKey = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+          monthlySpend[mKey] = (monthlySpend[mKey] || 0) + Number(po.total_amount);
+          if (mKey === currentMonthName) currentMonthSpend += Number(po.total_amount);
         }
+      });
+      m.monthlyProcurementSpend = currentMonthSpend;
+
+      const spendKeys = Object.keys(monthlySpend).slice(-6);
+      m.spendData = spendKeys.map((key, index) => {
+        const val = monthlySpend[key];
+        return {
+          month: key.split(' ')[0],
+          spendValue: val,
+          spend: `$${val.toLocaleString()}`,
+          x: 75 + (index * 70),
+          y: 100,
+          height: 100
+        };
+      });
+      if (m.spendData.length === 0) {
+        m.spendData.push({ month: "No Data", spendValue: 0, spend: "$0", x: 75, y: 100, height: 10 });
       }
 
       // 3. Finance
-      if (isFinance) {
-        const { data: payData } = await supabase.from('payments').select('amount_paid, status');
-        if (payData) {
-          payData.forEach(p => {
-            if (p.status === 'Pending' || p.status === 'Processing') m.outstandingPaymentsTotal += Number(p.amount_paid) || 0;
-            if (p.status === 'Overdue') m.overdueInvoices++;
-            if (p.status === 'Paid') m.paidThisMonth += Number(p.amount_paid) || 0; // Simplified for mock
+      const { data: payData } = await supabase.from('payments').select('amount_paid, status');
+      if (payData) {
+        payData.forEach(p => {
+          if (p.status === 'Pending' || p.status === 'Processing') m.outstandingPaymentsTotal += Number(p.amount_paid) || 0;
+          if (p.status === 'Overdue') m.overdueInvoices++;
+          if (p.status === 'Paid') m.paidThisMonth += Number(p.amount_paid) || 0;
+        });
+      }
+
+      // 4. Warehouse (Live Data)
+      const { data: whData } = await supabase.from('warehouses').select('max_cubic_capacity, current_occupancy_pct');
+      if (whData && whData.length > 0) {
+        let cap = 0;
+        let util = 0;
+        whData.forEach(w => {
+          cap += Number(w.max_cubic_capacity) || 0;
+          util += Number(w.current_occupancy_pct) || 0;
+        });
+        m.warehouseCapacity = cap;
+        m.warehouseUtilization = `${Math.round(util / whData.length)}%`;
+        m.totalWarehousesCount = whData.length;
+      }
+
+      // Derive receiving and shipments from purchase orders today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString();
+      const { count: receivedCount } = await supabase.from('purchase_orders').select('*', { count: 'exact', head: true }).eq('status', 'Completed').gte('updated_at', todayStr);
+      const { count: sentCount } = await supabase.from('purchase_orders').select('*', { count: 'exact', head: true }).eq('status', 'Sent').gte('updated_at', todayStr);
+
+      m.receivingToday = receivedCount || 0;
+      m.shipmentsToday = sentCount || 0;
+
+      // 5. Recent Activities (Derived from actual tables)
+      const { data: recentPOs } = await supabase.from('purchase_orders').select('id, status, updated_at, vendor_id (name)').order('updated_at', { ascending: false }).limit(3);
+      const { data: recentPRs } = await supabase.from('purchase_requests').select('id, status, updated_at, requested_by (full_name)').order('updated_at', { ascending: false }).limit(3);
+
+      const activities: any[] = [];
+      if (recentPOs) {
+        recentPOs.forEach(po => {
+          const vendorName = po.vendor_id ? (po.vendor_id as any).name : 'Vendor';
+          activities.push({
+            id: po.id,
+            action: `Purchase Order ${po.status}`,
+            type: po.status === 'Completed' ? 'success' : 'info',
+            timestamp: new Date(po.updated_at).toLocaleString(),
+            details: `PO for ${vendorName} was marked as ${po.status}`
           });
+        });
+      }
+      if (recentPRs) {
+        recentPRs.forEach(pr => {
+          const requesterName = pr.requested_by ? (pr.requested_by as any).full_name : 'User';
+          activities.push({
+            id: pr.id,
+            action: `Purchase Request ${pr.status}`,
+            type: pr.status === 'Approved' ? 'success' : (pr.status === 'Rejected' ? 'warning' : 'info'),
+            timestamp: new Date(pr.updated_at).toLocaleString(),
+            details: `PR requested by ${requesterName} is ${pr.status}`
+          });
+        });
+      }
+
+      // Sort and take top 5
+      m.recentActivities = activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+      // 6. Generate Active Alerts Dynamically based on Business Rules
+      const alerts: any[] = [];
+      let alertId = 1;
+
+      if (m.lowStockCount > 0) {
+        alerts.push({ id: alertId++, message: `${m.lowStockCount} items are running low on stock and need reordering.`, type: 'warning' });
+      }
+      if (m.overdueInvoices > 0) {
+        alerts.push({ id: alertId++, message: `${m.overdueInvoices} invoices are overdue for payment.`, type: 'error' });
+      }
+      if (m.pendingPRCount > 0) {
+        alerts.push({ id: alertId++, message: `${m.pendingPRCount} purchase requests are pending approval.`, type: 'info' });
+      }
+      if (m.warehouseUtilization) {
+        const utilPct = parseInt(m.warehouseUtilization.replace('%', ''));
+        if (utilPct > 90) {
+          alerts.push({ id: alertId++, message: `Warehouse utilization is high (${utilPct}%). Consider allocating more space.`, type: 'warning' });
         }
       }
 
-      // 4. Warehouse (Mock Data for KPIs)
-      if (isWarehouse) {
-        const { data: whData } = await supabase.from('warehouses').select('capacity, utilization');
-        if (whData) {
-          let cap = 0;
-          let util = 0;
-          whData.forEach(w => {
-            cap += Number(w.capacity) || 0;
-            util += Number(w.utilization) || 0;
-          });
-          m.warehouseCapacity = cap;
-          m.warehouseUtilization = whData.length ? `${Math.round(util / whData.length)}%` : '0%';
-        }
-        m.shipmentsToday = 12; // Mock
-        m.receivingToday = 5; // Mock
-      }
-
-      // 5. Recent Activities & Alerts
-      const { data: actData } = await supabase.from('activity_logs').select('*').order('timestamp', { ascending: false }).limit(5);
-      m.recentActivities = actData || [];
-
-      // Filter alerts based on role
-      const { data: alertData } = await supabase.from('ai_recommendations').select('*').eq('status', 'Active').limit(4);
-      if (alertData) {
-        let filteredAlerts = alertData;
-        // Basic naive filtering for alerts
-        if (role === 'inventory_manager') filteredAlerts = alertData.filter(a => a.alert_message.includes('stock') || a.alert_message.includes('demand'));
-        if (role === 'procurement_manager') filteredAlerts = alertData.filter(a => a.alert_message.includes('order') || a.alert_message.includes('supplier'));
-        
-        m.activeAlerts = filteredAlerts.map(a => ({
-          id: a.id,
-          message: a.alert_message,
-          type: a.severity === 'high' ? 'warning' : 'info'
-        }));
-      }
+      m.activeAlerts = alerts;
 
       setMetrics(m);
 

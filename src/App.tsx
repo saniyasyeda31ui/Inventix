@@ -12,6 +12,7 @@ import RegisterCompanyPage from "./pages/RegisterCompanyPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -30,14 +31,14 @@ export default function App() {
           <Route path="/register-company" element={<RegisterCompanyPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* ----------------------------------------------------------------
               AUTH-REDIRECT ROUTES — redirect to /dashboard if already signed in.
               Prevents a logged-in user from landing on the login form.
           ---------------------------------------------------------------- */}
-          <Route element={<RouteGuard redirectIfAuth />}>
-            <Route path="/login" element={<LoginPage />} />
-          </Route>
+          {/* TEMPORARILY DISABLED redirectIfAuth so you can preview the login page while logged in */}
+          <Route path="/login" element={<LoginPage />} />
 
           {/* ----------------------------------------------------------------
               PROTECTED ROUTES — redirect to /login if not authenticated.

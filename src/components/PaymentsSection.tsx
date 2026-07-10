@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   CreditCard, Search, RefreshCw, ChevronLeft, ChevronRight, 
-  MoreVertical, ShieldCheck, AlertCircle, Plus, Edit2, Trash2, X, Check
+  MoreVertical, ShieldCheck, AlertCircle, Plus, Edit2, Trash2, X, Check, CheckCircle2
 } from "lucide-react";
 import { PaymentItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -159,11 +159,11 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-400" />
+          <h1 className="font-display font-black text-3xl tracking-tight text-slate-900 flex items-center gap-2">
+            <CreditCard className="w-7 h-7 text-indigo-500" />
             <span>Sourcing Billing & Payments Ledger</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Settle outstanding raw material acquisition bills, wire transfers, and tax reconciliation records.</p>
+          <p className="text-[13px] text-slate-500/80 mt-1 font-medium">Settle outstanding raw material acquisition bills, wire transfers, and tax reconciliation records.</p>
         </div>
         {permissions?.canManagePayments && (
           <button 
@@ -177,7 +177,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col md:flex-row gap-4 justify-between items-center">
         
         {/* Search */}
         <div className="relative w-full md:w-80">
@@ -187,7 +187,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
             placeholder="Search payment ID, invoice, or vendor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
 
@@ -197,7 +197,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+            className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
           >
             <option value="All">All Transactions</option>
             <option value="Paid">Paid</option>
@@ -214,7 +214,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
               refreshPurchaseOrders();
               onShowToast("Filters reset and payments refreshed.", "info");
             }}
-            className="p-1.5 ml-2 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs transition-colors"
+            className="p-1.5 ml-2 rounded-lg border border-white/60 bg-white/60 hover:bg-white/70 text-slate-600 hover:text-slate-900 text-xs transition-colors"
             title="Reset Filters & Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -240,79 +240,79 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
       )}
 
       {/* Payments Table */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-xl shadow-slate-900/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Invoice Reference</th>
-                <th className="py-3 px-4">PO Reference</th>
-                <th className="py-3 px-4">Vendor Partner</th>
-                <th className="py-3 px-4 text-right">Acquisition Total</th>
-                <th className="py-3 px-4">Due Date</th>
-                <th className="py-3 px-4">Settle Method</th>
-                <th className="py-3 px-4">Settlement Status</th>
-                {permissions?.canManagePayments && <th className="py-3 px-4 text-center">Actions</th>}
+              <tr className="border-b border-white/60 bg-white/60/25 backdrop-blur-md text-[11px] font-extrabold text-slate-800 uppercase tracking-widest sticky top-0 z-10">
+                <th className="py-4 px-5">Invoice Reference</th>
+                <th className="py-4 px-5">PO Reference</th>
+                <th className="py-4 px-5">Vendor Partner</th>
+                <th className="py-4 px-5 text-right">Acquisition Total</th>
+                <th className="py-4 px-5">Due Date</th>
+                <th className="py-4 px-5">Settle Method</th>
+                <th className="py-4 px-5">Settlement Status</th>
+                {permissions?.canManagePayments && <th className="py-4 px-5 text-center">Actions</th>}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/40">
               {loading ? (
                 // Loading Skeleton Rows
                 Array.from({ length: itemsPerPage }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded ml-auto" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-4 w-24 rounded" /></td>
-                    <td className="py-4 px-4"><SkeletonLoader className="h-5 w-16 rounded" /></td>
-                    {permissions?.canManagePayments && <td className="py-4 px-4"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
+                  <tr key={`skeleton-${i}`}>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-32 rounded" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-20 rounded ml-auto" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-4 w-24 rounded" /></td>
+                    <td className="py-4 px-5"><SkeletonLoader className="h-5 w-16 rounded" /></td>
+                    {permissions?.canManagePayments && <td className="py-4 px-5"><SkeletonLoader className="h-6 w-6 rounded mx-auto" /></td>}
                   </tr>
                 ))
               ) : paginatedPayments.length > 0 ? (
                 paginatedPayments.map((p) => (
                   <tr 
                     key={p.uuid || p.id}
-                    className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all text-xs"
+                    className="hover:bg-white/60/40 transition-colors cursor-pointer group"
                   >
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.invoiceId}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.purchase_order_number}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{p.vendorName}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-200">{p.amount}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-500">{p.dueDate}</td>
-                    <td className="py-3.5 px-4 text-slate-400 font-medium">{p.method}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                    <td className="py-4 px-5 font-extrabold text-slate-950 text-sm">{p.invoiceId}</td>
+                    <td className="py-4 px-5 font-medium text-slate-500 text-xs">{p.purchase_order_number}</td>
+                    <td className="py-4 px-5 font-semibold text-slate-800 text-sm">{p.vendorName}</td>
+                    <td className="py-4 px-5 text-right font-extrabold font-mono text-slate-900 text-sm">{p.amount}</td>
+                    <td className="py-4 px-5 font-medium text-slate-600 text-xs">{p.dueDate}</td>
+                    <td className="py-4 px-5 font-medium text-slate-600 text-sm">{p.method}</td>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[11px] font-bold tracking-widest uppercase border ${
                         p.status === "Paid" 
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
+                          ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
                           : p.status === "Processing"
-                            ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/10"
+                            ? "bg-indigo-500/10 text-indigo-800 border-indigo-500/20"
                             : p.status === "Pending"
-                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
+                              ? "bg-amber-500/10 text-amber-800 border-amber-500/20"
                               : p.status === "Unpaid"
-                              ? "bg-slate-500/10 text-slate-400 border border-slate-500/10"
-                              : "bg-rose-500/10 text-rose-400 border border-rose-500/10"
+                              ? "bg-slate-500/10 text-slate-700 border-slate-500/20"
+                              : "bg-rose-500/10 text-rose-800 border-rose-500/20"
                       }`}>
                         {p.status}
                       </span>
                     </td>
                     {permissions?.canManagePayments && (
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-4 px-5 text-center">
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === p.id ? null : p.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
                           {activeMenuId === p.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               {p.status !== "Paid" && p.uuid && (
                                 <button
                                   onClick={() => handleProcessPayment(p.uuid as string, p.vendorName, p.amount)}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-emerald-600/10 hover:text-white flex items-center gap-1.5"
+                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-emerald-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                                 >
                                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                                   <span>Authorize Payment</span>
@@ -320,7 +320,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                               )}
                               <button
                                 onClick={() => handleOpenEditModal(p)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                               >
                                 <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Edit Payment</span>
@@ -328,7 +328,7 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
                               {p.uuid && (
                                 <button
                                   onClick={() => handleDelete(p.uuid as string, p.invoiceId)}
-                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-600/10 hover:text-rose-300 flex items-center gap-1.5"
+                                  className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 flex items-center gap-1.5 transition-colors"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Delete</span>
@@ -353,22 +353,25 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/20 flex items-center justify-between">
-          <span className="text-[10px] font-mono text-slate-500">
-            Page {currentPage} of {totalPages}
+        <div className="p-4 border-t border-white/60 bg-white/40 backdrop-blur-md flex items-center justify-between">
+          <span className="text-[10px] font-bold text-slate-500">
+            Page <span className="font-bold text-slate-700">{currentPage}</span> of <span className="font-bold text-slate-700">{totalPages}</span>
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
+            <span className="text-xs font-semibold text-slate-800 px-2">
+              Page {currentPage} of {totalPages}
+            </span>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -378,134 +381,142 @@ export default function PaymentsSection({ activeModal, onCloseModal, onShowToast
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#0a0e1a] border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0" onClick={handleCloseModalInternal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
             
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/20">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-indigo-400" />
-                {modalMode === "add" ? "Create New Payment" : "Edit Payment"}
-              </h2>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <CreditCard className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight">
+                  {modalMode === "add" ? "Record Payment" : "Edit Payment"}
+                </h3>
+              </div>
               <button 
                 onClick={handleCloseModalInternal}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+                className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2"
               >
-                <X className="w-4 h-4" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
-              <form id="payment-form" onSubmit={handleSubmit} className="space-y-4 text-xs">
-                
-                {/* Purchase Order Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Linked Purchase Order</label>
-                  <select
-                    required
-                    value={formData.purchase_order_id}
-                    onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                  >
-                    <option value="" disabled>Select a Purchase Order...</option>
-                    {purchaseOrders.map((po) => (
-                      <option key={po.uuid || po.id} value={po.uuid || po.id}>
-                        {po.id} - {po.vendorName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <form id="payment-form" onSubmit={handleSubmit} className="space-y-4">
+              
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Linked Purchase Order</label>
+                <select
+                  required
+                  value={formData.purchase_order_id}
+                  onChange={(e) => handlePurchaseOrderSelect(e.target.value)}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a Purchase Order...</option>
+                  {purchaseOrders.map((po) => (
+                    <option key={po.uuid || po.id} value={po.uuid || po.id}>
+                      {po.id} - {po.vendorName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-400 font-semibold uppercase tracking-wider block">Vendor</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Vendor</label>
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={formData.vendorName || "Auto-populated"} 
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-500 focus:outline-none cursor-not-allowed"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Amount Paid ($)</label>
                   <input 
-                    type="text" 
-                    readOnly 
-                    value={formData.vendorName || "Auto-populated"} 
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-500 focus:outline-none cursor-not-allowed"
+                    required
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={formData.amount_paid}
+                    onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   />
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Amount Paid ($)</label>
-                    <input 
-                      required
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={formData.amount_paid}
-                      onChange={e => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Due Date</label>
-                    <input 
-                      required
-                      type="date"
-                      value={formData.dueDate}
-                      onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    />
-                  </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Due Date</label>
+                  <input 
+                    required
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={e => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Payment Method</label>
-                    <select
-                      required
-                      value={formData.method}
-                      onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="ACH">ACH</option>
-                      <option value="ACH Transfer">ACH Transfer</option>
-                      <option value="Wire">Wire</option>
-                      <option value="Wire Transfer">Wire Transfer</option>
-                      <option value="Check">Check</option>
-                      <option value="Credit Card">Credit Card</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-slate-400 font-semibold uppercase tracking-wider block">Status</label>
-                    <select
-                      required
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-3.5 py-2.5 text-slate-200 focus:border-indigo-500 focus:outline-none"
-                    >
-                      <option value="Unpaid">Unpaid</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Paid">Paid</option>
-                      <option value="Overdue">Overdue</option>
-                      <option value="Disputed">Disputed</option>
-                    </select>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Payment Method</label>
+                  <select
+                    required
+                    value={formData.method}
+                    onChange={(e) => setFormData({ ...formData, method: e.target.value as any })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  >
+                    <option value="ACH">ACH</option>
+                    <option value="ACH Transfer">ACH Transfer</option>
+                    <option value="Wire">Wire</option>
+                    <option value="Wire Transfer">Wire Transfer</option>
+                    <option value="Check">Check</option>
+                    <option value="Credit Card">Credit Card</option>
+                  </select>
                 </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Status</label>
+                  <select
+                    required
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  >
+                    <option value="Unpaid">Unpaid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Disputed">Disputed</option>
+                  </select>
+                </div>
+              </div>
 
-              </form>
-            </div>
-
-            <div className="p-4 border-t border-slate-800 bg-slate-900/20 flex justify-end gap-3">
-              <button 
-                type="button"
-                onClick={handleCloseModalInternal}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                form="payment-form"
-                disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-lg shadow-indigo-900/20 flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                {modalMode === "add" ? "Create Payment" : "Save Changes"}
-              </button>
-            </div>
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button 
+                  type="button"
+                  onClick={handleCloseModalInternal}
+                  className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  form="payment-form"
+                  disabled={isSubmitting}
+                  className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">
+                    {modalMode === "add" ? "Record Payment" : "Save Changes"}
+                  </span>
+                  {isSubmitting ? (
+                    <RefreshCw className="w-4 h-4 animate-spin relative z-10" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
+                  )}
+                </button>
+              </div>
+            </form>
             
           </div>
         </div>

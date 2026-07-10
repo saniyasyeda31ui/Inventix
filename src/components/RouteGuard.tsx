@@ -42,20 +42,30 @@ export default function RouteGuard({
   // -------------------------------------------------------------------------
   if (loading) {
     return (
-      <div
-        className="min-h-screen bg-[#030712] flex items-center justify-center"
-        aria-label="Loading workspace..."
-        role="status"
-      >
-        {/* Pulsing Inventix brand mark — matches the app's dark theme */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 animate-pulse shadow-lg shadow-indigo-500/20" />
+      <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
+        {/* Animated Background from Login */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_#fbcfe8_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#bfdbfe_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#e9d5ff_0%,_transparent_80%)]" />
+          
+          <div className="absolute inset-0 opacity-[0.15]">
+            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0,300 C300,400 600,100 1000,200 C1400,300 1800,100 2000,300" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="5,5" />
+              <path d="M0,500 C400,600 800,200 1200,400 C1600,600 1900,300 2000,500" fill="none" stroke="#fff" strokeWidth="1" strokeDasharray="10,10" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Loading Content */}
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 animate-pulse shadow-[0_0_20px_rgba(99,102,241,0.3)] border border-white/40" />
           <div className="flex gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0ms]" />
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:150ms]" />
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 animate-bounce [animation-delay:300ms]" />
           </div>
-          <span className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
             Initialising workspace...
           </span>
         </div>

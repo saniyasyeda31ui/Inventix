@@ -24,143 +24,198 @@ Notice that we do not mention Supabase anywhere, and we leverage the custom meta
 
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: #030712;
-      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      background-color: #f9fafb;
+      color: #111827;
       margin: 0;
       padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    table.wrapper {
+      width: 100%;
+      background-color: #f9fafb;
+      padding: 40px 0;
     }
     .container {
-      max-width: 600px;
-      margin: 40px auto;
-      background-color: #0f172a;
-      border: 1px solid #1e293b;
+      max-width: 520px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
       border-radius: 12px;
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
-      padding: 30px;
+      padding: 48px 40px 0;
       text-align: center;
     }
-    .header h1 {
+    .company-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background-color: #f3f4f6;
+      color: #374151;
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+    .company-name {
       margin: 0;
-      color: #ffffff;
+      color: #111827;
       font-size: 24px;
-      letter-spacing: 1px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
     }
     .content {
-      padding: 40px 30px;
+      padding: 32px 40px 48px;
     }
     .greeting {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 20px;
-      color: #ffffff;
+      margin-bottom: 16px;
+      color: #111827;
     }
     .body-text {
       font-size: 15px;
       line-height: 1.6;
-      color: #cbd5e1;
-      margin-bottom: 30px;
+      color: #4b5563;
+      margin-bottom: 32px;
     }
     .info-box {
-      background-color: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 30px;
+      background-color: #f9fafb;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
     }
     .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
     .info-row:last-child {
       margin-bottom: 0;
     }
     .info-label {
-      color: #64748b;
-      font-size: 13px;
+      display: block;
+      color: #6b7280;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
     .info-value {
-      color: #f8fafc;
+      display: block;
+      color: #111827;
       font-weight: 500;
-      font-size: 14px;
-      text-transform: capitalize;
+      font-size: 15px;
     }
     .button-container {
       text-align: center;
-      margin-top: 40px;
     }
     .button {
       display: inline-block;
-      background-color: #4f46e5;
-      color: #ffffff;
+      background-color: #111827;
+      color: #ffffff !important;
       text-decoration: none;
-      padding: 14px 28px;
+      padding: 14px 32px;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 15px;
       transition: background-color 0.2s;
     }
     .button:hover {
-      background-color: #4338ca;
+      background-color: #374151;
     }
     .footer {
       text-align: center;
-      padding: 20px;
+      padding: 32px 40px;
+      background-color: #ffffff;
+      border-top: 1px solid #f3f4f6;
+    }
+    .footer-text {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .powered-by {
       font-size: 12px;
-      color: #64748b;
-      border-top: 1px solid #1e293b;
+      color: #d1d5db;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .inventix-brand {
+      color: #8b5cf6;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>INVENTIX ENTERPRISE</h1>
-    </div>
-    <div class="content">
-      <div class="greeting">Hello {{ .Data.full_name }},</div>
-      <div class="body-text">
-        You have been invited by your administrator to access the Inventix Enterprise Procurement & Inventory Management Platform.
-      </div>
-      
-      <div class="info-box">
-        <div class="info-row">
-          <span class="info-label">Role:</span>
-          <span class="info-value">{{ .Data.role }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Department:</span>
-          <span class="info-value">{{ .Data.department }}</span>
-        </div>
-      </div>
+  <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+      <td align="center">
+        <div class="container">
+          <div class="header">
+            <div class="company-logo">
+              <!-- Building Icon SVG -->
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21h18"></path>
+                <path d="M9 8h1"></path>
+                <path d="M9 12h1"></path>
+                <path d="M9 16h1"></path>
+                <path d="M14 8h1"></path>
+                <path d="M14 12h1"></path>
+                <path d="M14 16h1"></path>
+                <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
+              </svg>
+            </div>
+            <h1 class="company-name">{{ .Data.organization }}</h1>
+          </div>
+          <div class="content">
+            <div class="greeting">Welcome, {{ .Data.full_name }}</div>
+            <div class="body-text">
+              You have been invited to join <strong>{{ .Data.organization }}</strong>. Please set up your account to access your enterprise workspace and tools.
+            </div>
+            
+            <div class="info-box">
+              <div class="info-row">
+                <span class="info-label">Joining Company</span>
+                <span class="info-value">{{ .Data.organization }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Assigned Role</span>
+                <span class="info-value">{{ .Data.role }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email Address</span>
+                <span class="info-value">{{ .Email }}</span>
+              </div>
+            </div>
 
-      <div class="body-text" style="text-align: center;">
-        Please click the button below to activate your account and create your password.
-      </div>
-
-      <div class="button-container">
-        <!-- 
-          The {{ .ConfirmationURL }} will automatically append the invite token
-          and redirect to the Redirect URL (http://localhost:3000/accept-invitation).
-        -->
-        <a href="{{ .ConfirmationURL }}" class="button">Activate My Account</a>
-      </div>
-    </div>
-    <div class="footer">
-      If you were not expecting this invitation, you can safely ignore this email.
-    </div>
-  </div>
+            <div class="button-container">
+              <a href="{{ .ConfirmationURL }}" class="button">Create Password</a>
+            </div>
+          </div>
+          <div class="footer">
+            <div class="footer-text">
+              This invitation was sent to {{ .Email }}.<br>If you were not expecting this, you can safely ignore it.
+            </div>
+            <div class="powered-by">
+              Powered by <span class="inventix-brand">Inventix ERP</span>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 ```
+

@@ -21,36 +21,21 @@ export function useProducts() {
 
       const { data, error: fetchError } = await supabase
         .from('products')
-        .select(`
-          *,
-          vendors (name),
-          inventory_balances (on_hand_qty, safety_stock_qty)
-        `)
+        .select('*')
         .order('product_name'); // Sort alphabetically by default
 
       if (fetchError) {
         throw new Error(fetchError.message);
       }
 
+      // Fetch vendors manually to map IDs to Names reliably
+      const { data: vendorsData } = await supabase.from('vendors').select('id, name');
+      const vendorMap = new Map();
+      vendorsData?.forEach(v => vendorMap.set(v.id, v.name));
+
       // Map the database snake_case columns to the frontend camelCase interface
       const mappedProducts: ProductItem[] = (data || []).map((row: any) => {
-        let stockStatus = 'Out of Stock';
-        if (row.inventory_balances && row.inventory_balances.length > 0) {
-          const totalQty = row.inventory_balances.reduce((acc: number, ib: any) => acc + Number(ib.on_hand_qty || 0), 0);
-          const totalSafety = row.inventory_balances.reduce((acc: number, ib: any) => acc + Number(ib.safety_stock_qty || 0), 0);
-          
-          if (totalQty <= 0) {
-            stockStatus = 'Out of Stock';
-          } else if (totalQty <= totalSafety) {
-            stockStatus = 'Low Stock';
-          } else {
-            stockStatus = 'In Stock';
-          }
-        } else {
-          // Fallback if no inventory record
-          stockStatus = 'In Stock';
-        }
-
+        const vendorId = row.vendor_id || row.primary_vendor;
         return {
           id: row.id,
           sku: row.sku,
@@ -58,8 +43,8 @@ export function useProducts() {
           category: row.category,
           unitPrice: Number(row.unit_price), // DB numeric comes back as string sometimes
           leadTimeDays: row.lead_time_days,
-          primaryVendor: row.vendors?.name || row.vendor_id || 'Unknown',
-          stockStatus: stockStatus,
+          primaryVendor: vendorMap.get(vendorId) || vendorId || 'Unknown Vendor',
+          stockStatus: 'In Stock', // Field removed from DB, defaulting to In Stock
         };
       });
 
@@ -73,20 +58,15 @@ export function useProducts() {
   }, []);
 
   const addProduct = async (productData: Omit<ProductItem, 'id'>) => {
-    const newId = `PRD-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-    const newProduct = { ...productData, id: newId } as ProductItem;
-    
     const previousProducts = [...products];
-    setProducts((prev) => [...prev, newProduct]);
 
     const dbPayload = {
-      id: newId,
       sku: productData.sku,
       product_name: productData.name,
       category: productData.category,
       unit_price: productData.unitPrice,
       lead_time_days: productData.leadTimeDays,
-      vendor_id: productData.primaryVendor,
+      vendor_id: productData.primaryVendor, // This is expected to be a UUID
     };
 
     console.log('[useProducts] CREATE Payload:', dbPayload);
@@ -100,23 +80,22 @@ export function useProducts() {
     console.log('[useProducts] CREATE Supabase response:', { data, error, status, insertedRow: data });
 
     if (error) {
-      setProducts(previousProducts);
       console.error('[useProducts] CREATE Error:', error);
       fetchProducts();
       throw new Error(error.message);
     }
-    
-    setProducts((prev) => prev.map(p => p.id === newId ? {
-      ...p,
+
+    // Add the successfully created product from the backend
+    setProducts((prev) => [...prev, {
       id: data.id,
       sku: data.sku,
       name: data.product_name,
       category: data.category,
       unitPrice: Number(data.unit_price),
       leadTimeDays: data.lead_time_days,
-      primaryVendor: data.vendors?.name || data.vendor_id || 'Unknown',
-      stockStatus: newProduct.stockStatus,
-    } : p));
+      primaryVendor: data.vendor_id,
+      stockStatus: 'In Stock',
+    }]);
 
     return data;
   };

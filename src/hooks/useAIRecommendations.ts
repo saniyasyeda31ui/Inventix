@@ -4,6 +4,8 @@ import { AIRecommendation } from '../data/dashboardData';
 
 export function useAIRecommendations() {
   const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
+  const [metrics, setMetrics] = useState({ savings: 0, riskScore: 100, stockoutsAvoided: 0 });
+  const [lastGenerated, setLastGenerated] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,19 +26,40 @@ export function useAIRecommendations() {
 
 
 
+      let totalSavings = 0;
+      let stockouts = 0;
+      let riskPenalties = 0;
+
       const mappedData: AIRecommendation[] = (data || []).map((row) => {
-        // Format estimated savings to match UI (e.g. "₹48,500/mo")
         let savingsStr = "N/A";
+        const numericSavings = Number(row.estimated_savings) || 0;
         if (row.estimated_savings !== null) {
-          savingsStr = `₹${Number(row.estimated_savings).toLocaleString('en-IN')}/mo`;
+          savingsStr = `$${numericSavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+          totalSavings += numericSavings;
         }
 
-        // We generate a derived price reduction string based on savings
-        let priceRed = "Alternative pricing strategy recommended";
-        if (row.estimated_savings && row.estimated_savings > 100000) {
-          priceRed = "Lock-in bulk discount before projected price hike";
-        } else if (row.estimated_savings && row.estimated_savings > 0) {
-          priceRed = "Lower pricing than current supplier";
+        if (row.severity === 'high') {
+          if (row.alert_message.includes('Low Stock') || row.alert_message.includes('stockout')) {
+             stockouts++;
+          }
+          riskPenalties += 2;
+        } else if (row.severity === 'medium') {
+          riskPenalties += 1;
+        }
+
+        let priceRed = "Optimization strategy active";
+        if (row.alert_message.includes('Overstock')) {
+           priceRed = "Liquidate excess inventory";
+        } else if (row.alert_message.includes('Low Stock')) {
+           priceRed = "Prevent imminent stockout";
+        } else if (row.alert_message.includes('Warehouse')) {
+           priceRed = "Relieve capacity constraint";
+        } else if (row.alert_message.includes('Vendor')) {
+           priceRed = "Evaluate alternative sourcing";
+        } else if (row.alert_message.includes('PO')) {
+           priceRed = "Expedite late delivery";
+        } else if (row.alert_message.includes('Spend')) {
+           priceRed = "Renegotiate payment terms";
         }
 
         return {
@@ -51,7 +74,17 @@ export function useAIRecommendations() {
         };
       });
 
+      setMetrics({
+        savings: totalSavings,
+        riskScore: Math.max(0, 100 - riskPenalties),
+        stockoutsAvoided: stockouts
+      });
 
+      if (data && data.length > 0 && data[0].created_at) {
+         setLastGenerated(data[0].created_at);
+      } else {
+         setLastGenerated(null);
+      }
 
       setRecommendations(mappedData);
     } catch (err: any) {
@@ -64,6 +97,10 @@ export function useAIRecommendations() {
 
   const executeRecommendation = async (id: string | number) => {
     try {
+      if (typeof id === 'string' && id.startsWith('mock-')) {
+        setRecommendations(prev => prev.filter(r => r.id !== id));
+        return;
+      }
       // ── DIAGNOSTIC LOG 1: what id are we sending? ──────────────────────
 
 
@@ -112,15 +149,27 @@ export function useAIRecommendations() {
     }
   };
 
+  const refreshRecommendations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { error: invokeError } = await supabase.functions.invoke('generate-insights');
+      if (invokeError) {
+        console.error("Error generating insights:", invokeError);
+      }
+      
+      await fetchRecommendations();
+    } catch (err: any) {
+      setError(err.message || 'Failed to refresh recommendations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchRecommendations();
   }, [fetchRecommendations]);
 
-  return {
-    recommendations,
-    loading,
-    error,
-    refreshRecommendations: fetchRecommendations,
-    executeRecommendation
-  };
+  return { recommendations, metrics, lastGenerated, loading, error, refreshRecommendations, executeRecommendation };
 }

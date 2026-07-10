@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { 
   Sliders, Search, Filter, RefreshCw, ChevronLeft, ChevronRight, 
-  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle, Trash2
+  Package, AlertTriangle, ArrowRightLeft, ShieldCheck, MoreVertical, SlidersHorizontal, AlertCircle, Trash2, CheckCircle2
 } from "lucide-react";
 import { LiveStockItem } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
@@ -117,11 +117,11 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <SlidersHorizontal className="w-5 h-5 text-indigo-400" />
+          <h1 className="font-display font-black text-3xl tracking-tight text-slate-900 flex items-center gap-2">
+            <SlidersHorizontal className="w-7 h-7 text-indigo-500" />
             <span>Inventory Balance & Stock Levels</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Real-time counts, safety stock safety thresholds, and physical warehouse bin storage coordinates.</p>
+          <p className="text-[13px] text-slate-500/80 mt-1 font-medium">Real-time counts, safety stock safety thresholds, and physical warehouse bin storage coordinates.</p>
         </div>
         {permissions?.canManageInventory && (
           <button
@@ -138,7 +138,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
       </div>
 
       {/* Filters */}
-      <div className="p-4 rounded-xl border border-slate-900 bg-[#040815] flex flex-col xl:flex-row gap-4 justify-between items-center">
+      <div className="p-4 rounded-xl border border-white/60 bg-white/50 backdrop-blur-2xl flex flex-col xl:flex-row gap-4 justify-between items-center">
         
         {/* Search */}
         <div className="relative w-full xl:w-80">
@@ -151,7 +151,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-900 bg-slate-950/50 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-white/60 bg-white/50 backdrop-blur-md text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                 setWarehouseFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+              className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
             >
               {warehouses.map(w => <option key={w} value={w}>{w}</option>)}
             </select>
@@ -179,7 +179,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-2 py-1.5 text-xs rounded-lg border border-slate-900 bg-slate-950 text-slate-300 focus:outline-none"
+              className="px-2 py-1.5 text-xs rounded-lg border border-white/60 bg-white/60 text-slate-800 focus:outline-none"
             >
               {statuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -194,7 +194,7 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
               refreshInventory();
               onShowToast("Filters reset and inventory refreshed.", "info");
             }}
-            className="p-1.5 rounded-lg border border-slate-900 bg-slate-950 hover:bg-slate-900/60 text-slate-400 hover:text-white text-xs ml-auto transition-colors"
+            className="p-1.5 rounded-lg border border-white/60 bg-white/60 hover:bg-white/70 text-slate-600 hover:text-slate-900 text-xs ml-auto transition-colors"
             title="Reset Filters & Refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -220,25 +220,25 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
       )}
 
       {/* Stocks Table */}
-      <div className="border border-slate-900 rounded-2xl bg-[#040815] overflow-hidden">
+      <div className="border border-white/60 rounded-2xl bg-white/50 backdrop-blur-2xl overflow-hidden shadow-xl shadow-slate-900/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-900 bg-slate-950/20 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4">SKU / ID</th>
-                <th className="py-3 px-4">Material Description</th>
-                <th className="py-3 px-4 text-right">Physical Quantity</th>
-                <th className="py-3 px-4">Warehouse Facility</th>
-                <th className="py-3 px-4">Category/Sector</th>
-                <th className="py-3 px-4">Status</th>
-                {permissions?.canManageInventory && <th className="py-3 px-4 text-center">Actions</th>}
+              <tr className="border-b border-white/60 bg-white/60/25 backdrop-blur-md text-[11px] font-extrabold text-slate-800 uppercase tracking-widest sticky top-0 z-10">
+                <th className="py-4 px-5">SKU / ID</th>
+                <th className="py-4 px-5">Material Description</th>
+                <th className="py-4 px-5 text-right">Physical Quantity</th>
+                <th className="py-4 px-5">Warehouse Facility</th>
+                <th className="py-4 px-5">Category/Sector</th>
+                <th className="py-4 px-5">Status</th>
+                {permissions?.canManageInventory && <th className="py-4 px-5 text-center">Actions</th>}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/40">
               {loading ? (
                 // Loading Skeleton Rows
                 Array.from({ length: itemsPerPage }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="border-b border-slate-900/40">
+                  <tr key={`skeleton-${i}`} className="border-b border-white/40">
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-20 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-32 rounded" /></td>
                     <td className="py-4 px-4"><SkeletonLoader className="h-4 w-16 rounded ml-auto" /></td>
@@ -253,64 +253,65 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
                   <tr 
                     key={item.id}
                     onClick={() => handleRowClick(item)}
-                    className="border-b border-slate-900/50 hover:bg-slate-950/20 transition-all cursor-pointer text-xs"
+                    className="hover:bg-white/60/40 transition-colors cursor-pointer group"
                   >
-                    <td className="py-3.5 px-4 font-mono text-slate-300 font-semibold">{item.sku}</td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-200">{item.name}</td>
-                    <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-200">
+                    <td className="py-4 px-5 font-semibold text-slate-800 text-xs">{item.sku}</td>
+                    <td className="py-4 px-5 font-extrabold text-slate-950 text-sm">{item.name}</td>
+                    <td className="py-4 px-5 text-right font-extrabold font-mono text-slate-900 text-sm">
                       {item.qty.toLocaleString()} units
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">{item.warehouse}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{item.sector}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                    <td className="py-4 px-5 font-medium text-slate-700 text-sm">{item.warehouse}</td>
+                    <td className="py-4 px-5 font-medium text-slate-600 text-sm">{item.sector}</td>
+                    <td className="py-4 px-5">
+                      <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded shadow-sm text-[11px] font-bold tracking-widest uppercase border ${
                         item.status === "Optimal" 
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
+                          ? "bg-emerald-500/10 text-emerald-800 border-emerald-500/20"
                           : item.status === "Low Stock"
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/10"
+                            ? "bg-amber-500/10 text-amber-800 border-amber-500/20"
                             : item.status === "Transit"
-                              ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/10"
-                              : "bg-rose-500/10 text-rose-400 border border-rose-500/10"
+                              ? "bg-indigo-500/10 text-indigo-800 border-indigo-500/20"
+                              : "bg-rose-500/10 text-rose-800 border-rose-500/20"
                       }`}>
                         {item.status}
                       </span>
                     </td>
                     {permissions?.canManageInventory && (
-                      <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-4 px-5 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="relative inline-block text-left">
                           <button 
                             onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
-                            className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white/80 transition-colors cursor-pointer"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           
                           {activeMenuId === item.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-slate-900 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
+                            <div className="absolute right-0 mt-1 w-44 bg-[#050914] border border-white/60 rounded-xl shadow-2xl z-50 p-1.5 space-y-1">
                               <button
                                 onClick={() => handleAuditPassed(item.id, item.name)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                               >
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                                 <span>Audit Passed</span>
                               </button>
                               <button
                                 onClick={() => handleStockAdjustment(item.id, item.qty, 500)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                               >
                                 <Package className="w-3.5 h-3.5 text-indigo-400" />
                                 <span>Adjust Stock (+500)</span>
                               </button>
                               <button
                                 onClick={() => handleStockAdjustment(item.id, item.qty, -500)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/10 hover:text-white flex items-center gap-1.5"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-1.5 transition-colors"
                               >
                                 <ArrowRightLeft className="w-3.5 h-3.5 text-rose-400" />
                                 <span>Adjust Stock (-500)</span>
                               </button>
+                              <div className="h-px bg-slate-800 my-1" />
                               <button
                                 onClick={() => handleDelete(item.id, item.name)}
-                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 mt-1 border-t border-slate-900/50"
+                                className="w-full text-left px-3 py-1.5 text-[11px] rounded-lg text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 transition-colors"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 <span>Delete Record</span>
@@ -334,22 +335,25 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/20 flex items-center justify-between">
-          <span className="text-[10px] font-mono text-slate-500">
-            Page {currentPage} of {totalPages}
+        <div className="p-4 border-t border-white/60 bg-white/40 backdrop-blur-md flex items-center justify-between">
+          <span className="text-[10px] font-bold text-slate-500">
+            Page <span className="font-bold text-slate-700">{currentPage}</span> of <span className="font-bold text-slate-700">{totalPages}</span>
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
+            <span className="text-xs font-semibold text-slate-800 px-2">
+              Page {currentPage} of {totalPages}
+            </span>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-900 bg-slate-950/40 hover:bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+              className="p-1.5 rounded-lg border border-white/60 bg-white/60/40 hover:bg-white/80 text-slate-600 hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-colors"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -359,93 +363,101 @@ export default function InventorySection({ onShowToast, activeModal, onCloseModa
 
       {/* Receive Stock Modal */}
       {showReceiveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-lg bg-[#050914] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-slideIn">
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0" onClick={closeModal} />
+          <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-                  <Package className="w-4 h-4 text-indigo-400" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <Package className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-white">Receive Stock</h2>
-                  <p className="text-[10px] text-slate-400">Add or adjust inventory balances.</p>
+                  <h3 className="text-[22px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">
+                    Receive Inventory
+                  </h3>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Add or adjust stock</p>
                 </div>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-slate-900 text-slate-400 hover:text-white transition-colors">
-                <X className="w-4 h-4" />
+              <button 
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer p-2"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
             
-            <form onSubmit={handleReceiveSubmit} className="p-6 space-y-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Product / Material</label>
-                  <select
+            <form onSubmit={handleReceiveSubmit} className="space-y-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Product / Material</label>
+                <select
+                  required
+                  value={formData.productId}
+                  onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a product...</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Destination Warehouse</label>
+                <select
+                  required
+                  value={formData.warehouseId}
+                  onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                  className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                >
+                  <option value="" disabled>Select a warehouse facility...</option>
+                  {warehouseData.map(w => (
+                    <option key={w.uuid || w.id} value={w.uuid || w.id}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Quantity to Receive</label>
+                  <input
+                    type="number"
                     required
-                    value={formData.productId}
-                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="" disabled>Select a product...</option>
-                    {products.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                    ))}
-                  </select>
+                    min="0"
+                    value={formData.qtyToAdd}
+                    onChange={(e) => setFormData({ ...formData, qtyToAdd: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Destination Warehouse</label>
-                  <select
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase block mb-1.5">Safety Stock Threshold</label>
+                  <input
+                    type="number"
                     required
-                    value={formData.warehouseId}
-                    onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="" disabled>Select a warehouse facility...</option>
-                    {warehouseData.map(w => (
-                      <option key={w.uuid || w.id} value={w.uuid || w.id}>{w.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Quantity to Receive</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.qtyToAdd}
-                      onChange={(e) => setFormData({ ...formData, qtyToAdd: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Safety Stock Threshold</label>
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      value={formData.safetyStockQty}
-                      onChange={(e) => setFormData({ ...formData, safetyStockQty: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-950 text-slate-200 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
+                    min="0"
+                    value={formData.safetyStockQty}
+                    onChange={(e) => setFormData({ ...formData, safetyStockQty: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
+                  />
                 </div>
               </div>
 
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800 mt-6">
-                <button
+              <div className="pt-4 flex justify-end gap-3 border-t border-slate-200/60 mt-6">
+                <button 
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-slate-900 transition-colors"
+                  className="px-5 py-3.5 rounded-[14px] text-[13px] font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors bg-transparent border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
-                <button
+                <button 
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  className="relative rounded-[14px] bg-gradient-to-r from-[#9444ff] to-[#bd44ff] text-white font-bold py-3.5 px-6 shadow-[0_8px_20px_rgba(168,85,247,0.4)] focus:outline-none flex items-center justify-center gap-2 group overflow-hidden cursor-pointer"
                 >
-                  Process Receipt
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+                  <span className="relative z-10 text-[13px]">Receive Inventory</span>
+                  <CheckCircle2 className="w-4 h-4 relative z-10 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </form>

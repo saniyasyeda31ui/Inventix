@@ -5,26 +5,27 @@ import { Cpu, Lock, CheckCircle, AlertTriangle, Eye, EyeOff, Loader2, ArrowRight
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 
-export default function AcceptInvitationPage() {
-  const { user, profile, loading: authLoading } = useAuth();
+export default function ResetPasswordPage() {
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [hashError, setHashError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If the reset link itself had an error (e.g. expired)
     const hash = window.location.hash;
     if (hash && hash.includes('error_description=')) {
       const params = new URLSearchParams(hash.substring(1));
       const description = params.get('error_description');
       if (description) {
-        setHashError("This invitation has expired or is no longer valid. Please contact your administrator.");
+        setHashError("This password reset link has expired or is invalid. Please request a new one.");
       }
     }
   }, []);
@@ -35,7 +36,7 @@ export default function AcceptInvitationPage() {
     if (/[A-Z]/.test(pass)) score += 1;
     if (/[0-9]/.test(pass)) score += 1;
     if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-    return score;
+    return score; 
   };
 
   const strength = getStrength(password);
@@ -63,9 +64,10 @@ export default function AcceptInvitationPage() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
-      setSuccessMsg("Your account has been activated successfully.");
-
+      setSuccessMsg("Your password has been successfully updated.");
+      
       setTimeout(async () => {
+        // Sign out to force re-login with the new password
         await supabase.auth.signOut();
         navigate('/login');
       }, 2000);
@@ -76,14 +78,9 @@ export default function AcceptInvitationPage() {
     }
   };
 
-  const fullName = profile?.full_name || user?.user_metadata?.full_name || 'User';
-  const displayRole = profile?.role || user?.user_metadata?.role || 'Member';
-  const displayDepartment = user?.user_metadata?.department || 'Operations';
-
-  // Shared UI renderer for full page errors (Access Denied / Expired)
   const renderErrorState = (title: string, msg: string) => (
     <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
-      <motion.div
+      <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md bg-white/90 backdrop-blur-xl border border-white rounded-[24px] p-8 text-center shadow-[0_0_20px_rgba(255,255,255,1),0_8px_30px_rgba(0,0,0,0.05)]"
@@ -94,10 +91,10 @@ export default function AcceptInvitationPage() {
         <h3 className="text-[22px] font-extrabold text-slate-900 font-display mb-2">{title}</h3>
         <p className="text-[13px] text-slate-500 leading-relaxed mb-8">{msg}</p>
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/forgot-password')}
           className="w-full rounded-[14px] bg-slate-900 text-white font-bold py-3.5 hover:bg-slate-800 transition-colors shadow-lg"
         >
-          Return to Sign In
+          Request New Link
         </button>
       </motion.div>
     </div>
@@ -108,18 +105,18 @@ export default function AcceptInvitationPage() {
       <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Verifying Invitation...</span>
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-widest">Verifying Link...</span>
         </div>
       </div>
     );
   }
 
-  if (hashError) return renderErrorState("Invitation Invalid", hashError);
-  if (!user) return renderErrorState("Access Denied", "You must access this page via a valid email invitation link.");
+  if (hashError) return renderErrorState("Link Invalid", hashError);
+  if (!user) return renderErrorState("Access Denied", "You must access this page via a valid password recovery link from your email.");
 
   return (
     <div className="relative w-screen h-screen overflow-hidden font-sans flex items-center justify-center bg-[#f6ebff]">
-
+      
       {/* ======================================================== */}
       {/* EXACT LIVING BACKGROUND RECREATION                       */}
       {/* ======================================================== */}
@@ -129,7 +126,7 @@ export default function AcceptInvitationPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#e9d5ff_0%,_transparent_80%)]" />
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }} transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }} className="absolute -left-[20%] top-[20%] w-[60vw] h-[60vw] bg-pink-300/40 rounded-full blur-[140px]" />
         <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 0] }} transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }} className="absolute -right-[20%] bottom-[10%] w-[60vw] h-[60vw] bg-blue-300/40 rounded-full blur-[140px]" />
-
+        
         <div className="absolute inset-0 opacity-[0.15]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,300 C300,400 600,100 1000,200 C1400,300 1800,100 2000,300" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="5,5" />
@@ -140,18 +137,18 @@ export default function AcceptInvitationPage() {
 
         <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute -bottom-10 -left-10 w-64 h-64 rounded-full bg-gradient-to-br from-pink-300/40 to-transparent border-[3px] border-white/40 shadow-[inset_20px_20px_40px_rgba(255,255,255,0.8),inset_-10px_-10px_30px_rgba(255,100,255,0.3),0_20px_50px_rgba(0,0,0,0.1)] backdrop-blur-sm" />
         <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-10 right-20 w-32 h-32 rounded-full bg-gradient-to-br from-blue-200/40 to-transparent border-[2px] border-white/50 shadow-[inset_10px_10px_20px_rgba(255,255,255,0.8),inset_-5px_-5px_15px_rgba(100,200,255,0.3),0_10px_30px_rgba(0,0,0,0.1)] backdrop-blur-[2px]" />
-
+        
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#ffffff_1.5px,_transparent_1.5px)] opacity-[0.5]" style={{ backgroundSize: '70px 70px' }} />
       </div>
 
       {/* MAIN CONTAINER */}
-      <motion.div
+      <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-10 w-[94vw] max-w-[1300px] h-[92vh] max-h-[800px] min-h-[600px] rounded-[36px] bg-white/40 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] flex flex-col md:flex-row border border-white/50"
       >
-
+        
         <div className="hidden md:flex absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-gradient-to-b from-transparent via-white/80 to-transparent shadow-[0_0_15px_rgba(255,255,255,1)] items-center justify-center z-20 pointer-events-none">
           <div className="relative w-6 h-6 flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,1)]">
             <div className="absolute w-[2px] h-[16px] bg-white rounded-full shadow-[0_0_8px_white]" />
@@ -163,7 +160,7 @@ export default function AcceptInvitationPage() {
 
         {/* LEFT SECTION */}
         <div className="hidden md:flex md:w-[50%] h-full bg-white/30 relative flex-col justify-between p-8 lg:p-10 xl:p-12 border-r border-white/10 rounded-l-[36px] overflow-hidden">
-
+          
           <div className="relative z-10 h-full flex flex-col">
             <Link to="/" className="flex items-center gap-3 mb-6 w-fit focus:outline-none">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -176,11 +173,11 @@ export default function AcceptInvitationPage() {
             </Link>
 
             <h1 className="font-display font-extrabold text-[38px] xl:text-[44px] tracking-tight leading-[1.05] text-slate-900 mb-4">
-              Accept <br /><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Invitation</span>
+              Secure <br/><span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Recovery</span>
             </h1>
 
             <p className="text-slate-600 text-[12px] leading-relaxed mb-6 max-w-[380px]">
-              Complete your account activation to join your enterprise workspace. Set a secure password to unlock full access.
+              Set a strong, new password for your enterprise workspace. You will use this new password for all future sign ins.
             </p>
 
             <div className="flex items-center gap-4 mb-6">
@@ -230,10 +227,10 @@ export default function AcceptInvitationPage() {
           </div>
         </div>
 
-        {/* RIGHT SECTION (Activation Form) */}
+        {/* RIGHT SECTION (Reset Form) */}
         <div className="w-full md:w-[50%] h-full bg-white/40 relative flex flex-col justify-center p-8 lg:p-10 xl:p-12 rounded-[36px] md:rounded-l-none md:rounded-r-[36px]">
           <div className="w-full max-w-md mx-auto">
-
+            
             <div className="md:hidden mb-8 text-center">
               <Link to="/" className="inline-flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -244,14 +241,14 @@ export default function AcceptInvitationPage() {
             </div>
 
             {successMsg ? (
-              <motion.div
+              <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                 className="bg-white/90 backdrop-blur-xl border border-white rounded-[16px] p-8 text-center shadow-[0_0_15px_rgba(255,255,255,1),0_4px_20px_rgba(0,0,0,0.04)]"
               >
                 <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto text-emerald-500 mb-4 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                   <CheckCircle className="w-6 h-6" />
                 </div>
-                <h3 className="text-[18px] font-extrabold text-slate-900 font-display mb-2">Account Activated</h3>
+                <h3 className="text-[18px] font-extrabold text-slate-900 font-display mb-2">Password Updated</h3>
                 <p className="text-[12px] text-slate-500 leading-relaxed mb-6">
                   {successMsg}
                 </p>
@@ -261,13 +258,13 @@ export default function AcceptInvitationPage() {
               </motion.div>
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div
+                <motion.div 
                   initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
                 >
                   <div className="mb-6">
-                    <h2 className="text-[26px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">Setup Password</h2>
-                    <p className="text-slate-500 text-[11.5px] mt-2 leading-relaxed">Create a secure password for <strong className="text-indigo-600">{fullName}</strong>.</p>
+                    <h2 className="text-[26px] font-extrabold text-slate-900 font-display tracking-tight leading-tight">Create New Password</h2>
+                    <p className="text-slate-500 text-[11.5px] mt-2 leading-relaxed">Enter a new secure password for your account.</p>
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
@@ -290,8 +287,8 @@ export default function AcceptInvitationPage() {
                           onChange={(e) => setPassword(e.target.value)}
                           className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 pl-10 pr-10 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                         />
-                        <button
-                          type="button"
+                        <button 
+                          type="button" 
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3.5 text-slate-400 hover:text-indigo-500"
                         >
@@ -301,7 +298,7 @@ export default function AcceptInvitationPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Confirm Password</label>
+                      <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Confirm New Password</label>
                       <div className="relative flex items-center">
                         <Lock className="absolute left-3.5 w-4 h-4 text-slate-400" />
                         <input
@@ -323,10 +320,11 @@ export default function AcceptInvitationPage() {
                         </div>
                         <div className="h-[6px] w-full bg-white border border-slate-200 rounded-full overflow-hidden flex gap-[2px]">
                           {[0, 1, 2, 3].map(idx => (
-                            <div
+                            <div 
                               key={idx}
-                              className={`h-full flex-1 rounded-full transition-colors duration-300 ${idx < strength ? strengthColors[strength] : 'bg-transparent'
-                                }`}
+                              className={`h-full flex-1 rounded-full transition-colors duration-300 ${
+                                idx < strength ? strengthColors[strength] : 'bg-transparent'
+                              }`}
                             />
                           ))}
                         </div>
@@ -342,7 +340,7 @@ export default function AcceptInvitationPage() {
                     >
                       <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
                       <span className="relative z-10 text-[12px]">
-                        {isSubmitting ? "Activating..." : "Activate Account"}
+                        {isSubmitting ? "Updating..." : "Update Password"}
                       </span>
                       {!isSubmitting && <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform" />}
                     </motion.button>

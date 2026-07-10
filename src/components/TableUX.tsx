@@ -40,12 +40,12 @@ export function EmptyState({
   onAction 
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 border border-slate-900 bg-[#040815]/60 rounded-2xl my-4 space-y-4 max-w-xl mx-auto glow-card">
+    <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 border border-white/60 bg-white/60 backdrop-blur-xl rounded-2xl my-4 space-y-4 max-w-xl mx-auto glow-card">
       <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-lg shadow-indigo-500/5 animate-pulse">
         <Icon className="w-6 h-6 text-indigo-400" />
       </div>
       <div className="space-y-1">
-        <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono text-slate-400">{title}</h3>
+        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono text-slate-600">{title}</h3>
         <p className="text-xs text-slate-500 max-w-md leading-relaxed">{description}</p>
       </div>
       {actionLabel && onAction && (

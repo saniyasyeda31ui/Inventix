@@ -51,31 +51,64 @@ export interface UserProfile {
   created_at: string;
 }
 
+export interface CompanySettings {
+  company: {
+    industry: string;
+    timezone: string;
+    currency: string;
+    dateFormat: string;
+  };
+  procurement: {
+    approvalLimit: number;
+    autoApproveThreshold: number;
+    defaultLeadTime: number;
+  };
+  inventory: {
+    lowStockThreshold: number;
+    autoReorder: boolean;
+    valuationMethod: string;
+  };
+  notifications: {
+    emailEnabled: boolean;
+    purchaseAlerts: boolean;
+    inventoryAlerts: boolean;
+    paymentReminders: boolean;
+  };
+  security: {
+    twoFactor: boolean;
+    sessionTimeout: number;
+  };
+  users: {
+    defaultRole: string;
+  };
+  system: {
+    language: string;
+    theme: string;
+  };
+}
+
+export interface CompanyData {
+  name: string;
+  tax_identifier: string;
+  address_line_1: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
 /** Shape of the value exposed by AuthContext to all consumers. */
 interface AuthContextValue {
-  /** The raw Supabase auth user object. null when signed out. */
   user: User | null;
-  /** The user's row from public.profiles. null while loading or signed out. */
   profile: UserProfile | null;
-  /** The frontend application role derived from the database profile. */
   role: AppRole | null;
-  /** The mapped permissions for the current frontend role. */
   permissions: Permissions | null;
-  /**
-   * True while the initial session check is in flight.
-   * Use this to render a full-screen skeleton rather than flashing the login page.
-   */
+  companySettings: CompanySettings | null;
+  companyData: CompanyData | null;
   loading: boolean;
-  /**
-   * Sign the user in with email + password.
-   * Returns the Supabase AuthError if sign-in fails, or null on success.
-   */
   signIn: (email: string, password: string) => Promise<AuthError | null>;
-  /**
-   * Sign the user out and clear all local session data.
-   * The onAuthStateChange listener will set user + profile to null automatically.
-   */
   signOut: () => Promise<void>;
+  updateSettings: (newSettings: Partial<CompanySettings>) => Promise<{ error: Error | null }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,15 +130,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
-  // Start as true — we don't know the auth state yet on first render.
+  const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // -------------------------------------------------------------------------
-  // fetchProfile — loads the user's row from public.profiles
-  // Called whenever the auth session changes to a non-null user.
-  // Separated into its own function so it can be called from both
-  // the initial session check and the onAuthStateChange listener.
-  // -------------------------------------------------------------------------
   const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
@@ -114,28 +142,68 @@ export function AuthProvider({ children }: AuthProviderProps) {
       .single();
 
     if (error) {
-      // Profile may not exist yet if the DB trigger hasn't run (race condition
-      // on first signup). Log the error but don't crash — profile will be null.
       console.warn('[AuthContext] Could not fetch profile:', error.message);
       setProfile(null);
       setRole(null);
       setPermissions(null);
+      setCompanySettings(null);
+      setCompanyData(null);
     } else {
       const userProfile = data as UserProfile;
       setProfile(userProfile);
-      
-      // Determine frontend role and permissions
+
       const appRole = mapDatabaseRoleToAppRole(userProfile.role, userProfile.email);
       setRole(appRole);
       setPermissions(rolePermissions[appRole]);
+
+      // Fetch company settings
+      if (userProfile.organization) {
+        const { data: cData, error: companyError } = await supabase
+          .from('companies')
+          .select('name, tax_identifier, address_line_1, city, state, postal_code, country, settings')
+          .eq('name', userProfile.organization)
+          .single();
+
+        if (!companyError && cData) {
+          setCompanyData({
+            name: cData.name,
+            tax_identifier: cData.tax_identifier,
+            address_line_1: cData.address_line_1,
+            city: cData.city,
+            state: cData.state,
+            postal_code: cData.postal_code,
+            country: cData.country
+          });
+          if (cData.settings) {
+            setCompanySettings(cData.settings as CompanySettings);
+          } else {
+            // Provide default structure if not found or empty
+            setCompanySettings({
+              company: { industry: "Manufacturing", timezone: "UTC", currency: "USD", dateFormat: "MM/DD/YYYY" },
+              procurement: { approvalLimit: 10000, autoApproveThreshold: 500, defaultLeadTime: 14 },
+              inventory: { lowStockThreshold: 50, autoReorder: false, valuationMethod: "FIFO" },
+              notifications: { emailEnabled: true, purchaseAlerts: true, inventoryAlerts: true, paymentReminders: false },
+              security: { twoFactor: false, sessionTimeout: 60 },
+              users: { defaultRole: "viewer" },
+              system: { language: "en", theme: "light" }
+            });
+          }
+        } else {
+          // Provide default structure if not found or empty
+          setCompanySettings({
+            company: { industry: "Manufacturing", timezone: "UTC", currency: "USD", dateFormat: "MM/DD/YYYY" },
+            procurement: { approvalLimit: 10000, autoApproveThreshold: 500, defaultLeadTime: 14 },
+            inventory: { lowStockThreshold: 50, autoReorder: false, valuationMethod: "FIFO" },
+            notifications: { emailEnabled: true, purchaseAlerts: true, inventoryAlerts: true, paymentReminders: false },
+            security: { twoFactor: false, sessionTimeout: 60 },
+            users: { defaultRole: "viewer" },
+            system: { language: "en", theme: "light" }
+          });
+        }
+      }
     }
   }, []);
 
-  // -------------------------------------------------------------------------
-  // Session initialisation
-  // On mount: read the existing session from localStorage (persisted by the
-  // Supabase client). This avoids a flash of the login page on page refresh.
-  // -------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
 
@@ -148,17 +216,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(session.user);
         await fetchProfile(session.user.id);
       }
-      // Whether or not a session exists, we are done loading.
       setLoading(false);
     }
 
     initSession();
 
-    // -----------------------------------------------------------------------
-    // Auth state change listener
-    // Fires on: SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, USER_UPDATED, etc.
-    // This is the primary mechanism that keeps state in sync without polling.
-    // -----------------------------------------------------------------------
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -168,13 +230,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(session.user);
         await fetchProfile(session.user.id);
       } else {
-        // User signed out — clear all state.
         setUser(null);
         setProfile(null);
         setRole(null);
         setPermissions(null);
+        setCompanySettings(null);
+        setCompanyData(null);
       }
-      // After the first INITIAL_SESSION event resolves, loading should be false.
       setLoading(false);
     });
 
@@ -184,11 +246,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [fetchProfile]);
 
-  // -------------------------------------------------------------------------
-  // signIn — wraps supabase.auth.signInWithPassword
-  // Returns the AuthError on failure so the caller (LoginPage) can display it.
-  // Returns null on success — the onAuthStateChange listener handles state.
-  // -------------------------------------------------------------------------
   const signIn = useCallback(
     async (email: string, password: string): Promise<AuthError | null> => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -197,50 +254,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
     []
   );
 
-  // -------------------------------------------------------------------------
-  // signOut — wraps supabase.auth.signOut
-  // The onAuthStateChange listener fires SIGNED_OUT and clears state.
-  // -------------------------------------------------------------------------
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
 
-  // -------------------------------------------------------------------------
-  // Context value — memoised shape exposed to all consumers
-  // -------------------------------------------------------------------------
+  const updateSettings = useCallback(async (newSettings: Partial<CompanySettings>) => {
+    if (!profile?.organization) return { error: new Error("No organization found") };
+    
+    // Merge existing settings with partial updates
+    const mergedSettings = { ...companySettings, ...newSettings };
+    
+    const { error } = await supabase
+      .from('companies')
+      .update({ settings: mergedSettings })
+      .eq('name', profile.organization);
+      
+    if (!error) {
+      setCompanySettings(mergedSettings as CompanySettings);
+    }
+    
+    return { error };
+  }, [companySettings, profile]);
+
   const value: AuthContextValue = {
     user,
     profile,
     role,
     permissions,
+    companySettings,
+    companyData,
     loading,
     signIn,
     signOut,
+    updateSettings,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ---------------------------------------------------------------------------
-// useAuth — consumer hook
-// Must be called inside a component that is a descendant of <AuthProvider>.
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the current auth context value.
- *
- * @example
- * const { user, profile, loading, signIn, signOut } = useAuth();
- *
- * @throws If called outside of <AuthProvider>.
- */
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error(
-      '[useAuth] must be called inside <AuthProvider>.\n' +
-      'Ensure <AuthProvider> wraps the component tree in src/App.tsx.'
-    );
+    throw new Error('[useAuth] must be called inside <AuthProvider>');
   }
   return context;
 }
