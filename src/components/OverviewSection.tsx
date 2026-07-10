@@ -147,7 +147,7 @@ export default function OverviewSection({
               <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Warehouses</span>
             </div>
             <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {warehouseUtilization.length} <span className="text-sm font-bold text-slate-400">Online</span>
+              {totalWarehousesCount} <span className="text-sm font-bold text-slate-400">Online</span>
             </div>
           </div>
 
@@ -635,7 +635,7 @@ export default function OverviewSection({
                         fontWeight="800"
                         textAnchor="middle"
                         letterSpacing="0.05em"
-                        textTransform="uppercase"
+                        style={{ textTransform: "uppercase" }}
                       >
                         {spendData[hoveredBar].month} Spend
                       </text>

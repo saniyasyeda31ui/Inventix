@@ -120,71 +120,71 @@ export interface AIRecommendation {
 // MOCK DATASETS
 
 export const initialPurchaseRequests: PurchaseRequest[] = [
-  { 
-    id: "PR-2026-001", 
-    requestedBy: "Sarah Jenkins", 
-    department: "Operations", 
-    supplier: "Global Plastics Corp", 
-    expectedDelivery: "2026-07-10", 
-    priority: "High", 
-    status: "Pending", 
-    amount: "$12,450", 
-    item: "High-Density Polymer Reels" 
+  {
+    id: "PR-2026-001",
+    requestedBy: "Sarah Jenkins",
+    department: "Operations",
+    supplier: "Global Plastics Corp",
+    expectedDelivery: "2026-07-10",
+    priority: "High",
+    status: "Pending",
+    amount: "$12,450",
+    item: "High-Density Polymer Reels"
   },
-  { 
-    id: "PR-2026-002", 
-    requestedBy: "David Chen", 
-    department: "Engineering", 
-    supplier: "Intel Sourcing", 
-    expectedDelivery: "2026-07-05", 
-    priority: "Critical", 
-    status: "Approved", 
-    amount: "$45,000", 
-    item: "Silicon-Wafers (Tier-1)" 
+  {
+    id: "PR-2026-002",
+    requestedBy: "David Chen",
+    department: "Engineering",
+    supplier: "Intel Sourcing",
+    expectedDelivery: "2026-07-05",
+    priority: "Critical",
+    status: "Approved",
+    amount: "$45,000",
+    item: "Silicon-Wafers (Tier-1)"
   },
-  { 
-    id: "PR-2026-003", 
-    requestedBy: "Elena Rostova", 
-    department: "Maintenance", 
-    supplier: "SteelWorks Ltd", 
-    expectedDelivery: "2026-07-12", 
-    priority: "Medium", 
-    status: "Pending", 
-    amount: "$8,200", 
-    item: "Grade-X Copper Tubing" 
+  {
+    id: "PR-2026-003",
+    requestedBy: "Elena Rostova",
+    department: "Maintenance",
+    supplier: "SteelWorks Ltd",
+    expectedDelivery: "2026-07-12",
+    priority: "Medium",
+    status: "Pending",
+    amount: "$8,200",
+    item: "Grade-X Copper Tubing"
   },
-  { 
-    id: "PR-2026-004", 
-    requestedBy: "Marcus Vance", 
-    department: "Logistics", 
-    supplier: "Apex Logistics Ltd", 
-    expectedDelivery: "2026-07-08", 
-    priority: "Low", 
-    status: "Approved", 
-    amount: "$3,100", 
-    item: "Industrial Storage Pallets" 
+  {
+    id: "PR-2026-004",
+    requestedBy: "Marcus Vance",
+    department: "Logistics",
+    supplier: "Apex Logistics Ltd",
+    expectedDelivery: "2026-07-08",
+    priority: "Low",
+    status: "Approved",
+    amount: "$3,100",
+    item: "Industrial Storage Pallets"
   },
-  { 
-    id: "PR-2026-005", 
-    requestedBy: "Aisha Rahman", 
-    department: "Procurement", 
-    supplier: "Belgrave Chemicals", 
-    expectedDelivery: "2026-07-15", 
-    priority: "High", 
-    status: "Rejected", 
-    amount: "$15,600", 
-    item: "Lithium-Ion Cylinders" 
+  {
+    id: "PR-2026-005",
+    requestedBy: "Aisha Rahman",
+    department: "Procurement",
+    supplier: "Belgrave Chemicals",
+    expectedDelivery: "2026-07-15",
+    priority: "High",
+    status: "Rejected",
+    amount: "$15,600",
+    item: "Lithium-Ion Cylinders"
   },
-  { 
-    id: "PR-2026-006", 
-    requestedBy: "Robert Alvarez", 
-    department: "Operations", 
-    supplier: "Valves & Fittings Inc", 
-    expectedDelivery: "2026-07-20", 
-    priority: "Medium", 
-    status: "Pending", 
-    amount: "$5,400", 
-    item: "Pressure Relief Valves" 
+  {
+    id: "PR-2026-006",
+    requestedBy: "Robert Alvarez",
+    department: "Operations",
+    supplier: "Valves & Fittings Inc",
+    expectedDelivery: "2026-07-20",
+    priority: "Medium",
+    status: "Pending",
+    amount: "$5,400",
+    item: "Pressure Relief Valves"
   },
   {
     id: "PR-2026-007",

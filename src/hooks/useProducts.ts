@@ -21,24 +21,32 @@ export function useProducts() {
 
       const { data, error: fetchError } = await supabase
         .from('products')
-        .select('*, vendors(name)')
+        .select('*')
         .order('product_name'); // Sort alphabetically by default
 
       if (fetchError) {
         throw new Error(fetchError.message);
       }
 
+      // Fetch vendors manually to map IDs to Names reliably
+      const { data: vendorsData } = await supabase.from('vendors').select('id, name');
+      const vendorMap = new Map();
+      vendorsData?.forEach(v => vendorMap.set(v.id, v.name));
+
       // Map the database snake_case columns to the frontend camelCase interface
-      const mappedProducts: ProductItem[] = (data || []).map((row: any) => ({
-        id: row.id,
-        sku: row.sku,
-        name: row.product_name,
-        category: row.category,
-        unitPrice: Number(row.unit_price), // DB numeric comes back as string sometimes
-        leadTimeDays: row.lead_time_days,
-        primaryVendor: row.vendors?.name || row.vendor_id || 'Unknown Vendor',
-        stockStatus: 'In Stock', // Field removed from DB, defaulting to In Stock
-      }));
+      const mappedProducts: ProductItem[] = (data || []).map((row: any) => {
+        const vendorId = row.vendor_id || row.primary_vendor;
+        return {
+          id: row.id,
+          sku: row.sku,
+          name: row.product_name,
+          category: row.category,
+          unitPrice: Number(row.unit_price), // DB numeric comes back as string sometimes
+          leadTimeDays: row.lead_time_days,
+          primaryVendor: vendorMap.get(vendorId) || vendorId || 'Unknown Vendor',
+          stockStatus: 'In Stock', // Field removed from DB, defaulting to In Stock
+        };
+      });
 
       setProducts(mappedProducts);
     } catch (err: any) {
@@ -76,7 +84,7 @@ export function useProducts() {
       fetchProducts();
       throw new Error(error.message);
     }
-    
+
     // Add the successfully created product from the backend
     setProducts((prev) => [...prev, {
       id: data.id,

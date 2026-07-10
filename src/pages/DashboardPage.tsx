@@ -193,7 +193,16 @@ export default function DashboardPage() {
         return <ReportsSection onShowToast={showToast} />;
       case "AI Insights":
         if (!permissions?.canAccessAIInsights) return renderAccessDenied();
-        return <AIInsightsSection onShowToast={showToast} />;
+        return (
+          <AIInsightsSection 
+            onShowToast={showToast} 
+            onOpenModal={handleOpenModal} 
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo(0, 0);
+            }}
+          />
+        );
       case "Company":
         if (!permissions?.canAccessEmployees) return renderAccessDenied();
         return <CompanySection onShowToast={showToast} />;

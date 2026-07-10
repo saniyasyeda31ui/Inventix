@@ -433,7 +433,7 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
           <div className="absolute inset-0" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); onCloseModal?.(); }} />
           <div className="relative w-full max-w-xl bg-white/80 backdrop-blur-3xl shadow-[0_40px_100px_-20px_rgba(168,85,247,0.2),inset_0_0_0_1px_rgba(255,255,255,0.6)] border border-white/50 rounded-[32px] p-8 overflow-hidden animate-slideUp">
             <form onSubmit={isEditModalOpen ? handleEditSubmit : handleAddSubmit} className="space-y-5">
-              
+
               <div className="flex items-center justify-between pb-4 border-b border-slate-200/60">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -475,10 +475,10 @@ export default function ProductsSection({ onShowToast, onOpenModal, activeModal,
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Primary Vendor</label>
-                  <select 
-                    required 
-                    value={formData.primaryVendor} 
-                    onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })} 
+                  <select
+                    required
+                    value={formData.primaryVendor}
+                    onChange={e => setFormData({ ...formData, primaryVendor: e.target.value })}
                     className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                   >
                     <option value="" disabled>Select a Vendor</option>

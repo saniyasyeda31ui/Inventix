@@ -352,7 +352,7 @@ export default function VendorsSection({ onShowToast, onOpenModal, activeModal, 
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Company Name</label>
+                  <label className="text-[11.5px] font-bold text-slate-800 ml-1 tracking-wide uppercase">Supplier Name</label>
                   <input
                     required type="text" value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}

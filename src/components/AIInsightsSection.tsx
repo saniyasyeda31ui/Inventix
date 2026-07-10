@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { 
   Sparkles, AlertTriangle, TrendingUp, DollarSign, RefreshCw, 
   ChevronRight, ArrowRight, CheckCircle2, ShieldCheck, Zap, Factory
@@ -9,10 +9,12 @@ import { useAIRecommendations } from "../hooks/useAIRecommendations";
 
 interface AIInsightsSectionProps {
   onShowToast: (msg: string, type?: "success" | "info" | "warning" | "error") => void;
+  onOpenModal: (modalName: string) => void;
+  onTabChange: (tabName: string) => void;
 }
 
-export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProps) {
-  const { recommendations: recs, loading, error, refreshRecommendations, executeRecommendation } = useAIRecommendations();
+export default function AIInsightsSection({ onShowToast, onOpenModal, onTabChange }: AIInsightsSectionProps) {
+  const { recommendations: recs, metrics, lastGenerated, loading, error, refreshRecommendations, executeRecommendation } = useAIRecommendations();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hoveredForecastPoint, setHoveredForecastPoint] = useState(false);
 
@@ -27,7 +29,29 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
   const handleApplySourcing = async (rec: AIRecommendation) => {
     try {
       await executeRecommendation(rec.id);
-      onShowToast(`Dispatched reorder for ${rec.reorderQty} units of ${rec.item} from ${rec.alternativeSupplier}.`, "success");
+      
+      const alertMsg = rec.alert.toLowerCase();
+      if (alertMsg.includes("low stock")) {
+        onTabChange("Purchase Requests");
+        setTimeout(() => {
+          onOpenModal("createRequest");
+        }, 100);
+        onShowToast(`Dispatched reorder request for ${rec.item}.`, "success");
+      } else if (alertMsg.includes("overdue") || alertMsg.includes("po")) {
+        onTabChange("Purchase Orders");
+        onShowToast(`Routing to expedite PO for ${rec.item}.`, "info");
+      } else if (alertMsg.includes("overstock")) {
+        onTabChange("Inventory");
+        onShowToast(`Routing to Inventory to manage overstock for ${rec.item}.`, "info");
+      } else if (alertMsg.includes("vendor")) {
+        onTabChange("Vendors");
+        onShowToast(`Routing to Vendors to review performance.`, "info");
+      } else if (alertMsg.includes("warehouse")) {
+        onTabChange("Warehouses");
+        onShowToast(`Routing to Warehouses to manage utilization.`, "info");
+      } else {
+        onShowToast(`Strategy applied for ${rec.item}.`, "success");
+      }
     } catch (err: any) {
       onShowToast(err.message || "Failed to apply strategy.", "error");
     }
@@ -52,14 +76,21 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
           <p className="text-[13px] text-slate-500/80 mt-1 font-medium">Autonomous demand forecasts, automatic stockout prevention algorithms, and smart cost-optimization opportunities.</p>
         </div>
         
-        <button
-          onClick={handleRefreshAI}
-          disabled={isRefreshing}
-          className="premium-button-secondary disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          <span>{isRefreshing ? "Calculating..." : "Recalculate Models"}</span>
-        </button>
+        <div className="flex flex-col items-end">
+          <button
+            onClick={handleRefreshAI}
+            disabled={isRefreshing}
+            className="premium-button-secondary disabled:opacity-50 mb-1"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>{isRefreshing ? "Calculating..." : "Recalculate AI Insights"}</span>
+          </button>
+          {lastGenerated && (
+            <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+              Last Generated: {new Date(lastGenerated).toLocaleString()}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Hero Stats */}
@@ -67,20 +98,20 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
         
         <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Potential Cost Savings</span>
-          <div className="text-3xl font-black text-emerald-500 tracking-tight">$34,800/mo</div>
-          <p className="text-xs font-medium text-slate-500/80">Through strategic supplier switches and volume optimizations.</p>
+          <div className="text-3xl font-black text-emerald-500 tracking-tight">${metrics.savings.toLocaleString()}</div>
+          <p className="text-xs font-medium text-slate-500/80">Identified tied-up capital and sourcing opportunities.</p>
         </div>
 
         <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Supply Chain Risk Score</span>
-          <div className="text-3xl font-black text-indigo-500 tracking-tight">94.2 / 100</div>
-          <p className="text-xs font-medium text-slate-500/80">99.8% accurate lead-time prediction buffer active.</p>
+          <div className="text-3xl font-black text-indigo-500 tracking-tight">{metrics.riskScore} / 100</div>
+          <p className="text-xs font-medium text-slate-500/80">Real-time assessment based on vendor and PO performance.</p>
         </div>
 
         <div className="p-6 rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-3xl shadow-[0_12px_40px_-10px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,1)] space-y-2 card-hover-effect">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">Predicted Stockouts Avoided</span>
-          <div className="text-3xl font-black text-slate-900 tracking-tight">12 SKUs</div>
-          <p className="text-xs font-medium text-slate-500/80">Automated buffer threshold triggered last 30 days.</p>
+          <div className="text-3xl font-black text-slate-900 tracking-tight">{metrics.stockoutsAvoided} SKUs</div>
+          <p className="text-xs font-medium text-slate-500/80">Critical low-stock alerts identified successfully.</p>
         </div>
 
       </div>
@@ -194,9 +225,9 @@ export default function AIInsightsSection({ onShowToast }: AIInsightsSectionProp
                   <Sparkles className="w-8 h-8 text-slate-500" />
                 </div>
                 <div>
-                  <h3 className="text-slate-800 font-bold">No Active Recommendations</h3>
+                  <h3 className="text-slate-800 font-bold">No AI insights available yet</h3>
                   <p className="text-slate-500 text-xs mt-1 max-w-sm mx-auto">
-                    The AI engine has optimized your current inventory parameters. Check back later for newly computed sourcing strategies.
+                    Continue using Inventix to generate intelligent business insights.
                   </p>
                 </div>
               </div>

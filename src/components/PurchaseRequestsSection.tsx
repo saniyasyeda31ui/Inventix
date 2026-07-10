@@ -7,6 +7,7 @@ import { PurchaseRequest } from "../data/dashboardData";
 import SkeletonLoader from "./SkeletonLoader";
 import { usePurchaseRequests } from "../hooks/usePurchaseRequests";
 import { useProducts } from "../hooks/useProducts";
+import { useVendors } from "../hooks/useVendors";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,6 +22,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
   const { permissions } = useAuth();
   const { purchaseRequests: requests, loading, error, refreshPurchaseRequests, addPurchaseRequest, updatePurchaseRequest, deletePurchaseRequest } = usePurchaseRequests();
   const { products } = useProducts();
+  const { vendors } = useVendors();
   const [search, setSearch] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -41,7 +43,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
         quantity: 1,
         estimated_cost: 0,
         department: "Operations",
-        supplier: "Global Plastics Corp",
+        supplier: "",
         priority: "Medium",
         expectedDelivery: new Date().toISOString().split('T')[0]
       });
@@ -55,7 +57,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
     quantity: 1,
     estimated_cost: 0,
     department: "Operations",
-    supplier: "Global Plastics Corp",
+    supplier: "",
     priority: "Medium",
     expectedDelivery: new Date().toISOString().split('T')[0]
   });
@@ -67,7 +69,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       quantity: 1,
       estimated_cost: 0,
       department: "Operations",
-      supplier: "Global Plastics Corp",
+      supplier: "",
       priority: "Medium",
       expectedDelivery: new Date().toISOString().split('T')[0]
     });
@@ -82,7 +84,7 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
       quantity: req.quantity || 1,
       estimated_cost: req.estimated_cost || 0,
       department: req.department || "Operations",
-      supplier: req.supplier || "Global Plastics Corp",
+      supplier: req.supplier || "",
       priority: req.priority as any || "Medium",
       expectedDelivery: req.expectedDelivery || ""
     });
@@ -493,11 +495,10 @@ export default function PurchaseRequestsSection({ onShowToast, onOpenModal, acti
                         onChange={e => setFormData({ ...formData, supplier: e.target.value })}
                         className="w-full bg-white/90 backdrop-blur-xl border-[2px] border-white focus:border-indigo-300 rounded-[14px] py-3 px-4 text-[13px] font-bold text-slate-900 placeholder-slate-400 shadow-[0_0_15px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.03)] focus:outline-none transition-all"
                       >
-                        <option value="Global Plastics Corp">Global Plastics Corp</option>
-                        <option value="Intel Sourcing">Intel Sourcing</option>
-                        <option value="SteelWorks Ltd">SteelWorks Ltd</option>
-                        <option value="Belgrave Chemicals">Belgrave Chemicals</option>
-                        <option value="Valves & Fittings Inc">Valves & Fittings Inc</option>
+                        <option value="" disabled>Select a Supplier</option>
+                        {vendors.map(v => (
+                          <option key={v.id} value={v.name}>{v.name}</option>
+                        ))}
                       </select>
                     </div>
 
