@@ -81,10 +81,14 @@ export const rolePermissions: Record<AppRole, Permissions> = {
     canAccessPurchaseOrders: true,
     canAccessReports: true,
     canAccessAIInsights: true,
+    canAccessInventory: true,
+    canAccessProducts: true,
+    canAccessWarehouses: true,
     
     canManageVendors: true,
     canManagePurchaseRequests: true,
     canManagePurchaseOrders: true,
+    canManageInventory: true,
   },
   inventory_manager: {
     ...defaultPermissions,
