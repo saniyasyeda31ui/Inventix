@@ -1,5 +1,17 @@
--- 1. Drop existing check constraint
-ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+-- 1. Drop existing check constraints dynamically
+DO $$
+DECLARE
+    con record;
+BEGIN
+    FOR con IN 
+        SELECT conname 
+        FROM pg_constraint 
+        WHERE conrelid = 'public.profiles'::regclass 
+        AND contype = 'c'
+    LOOP
+        EXECUTE 'ALTER TABLE public.profiles DROP CONSTRAINT ' || quote_ident(con.conname);
+    END LOOP;
+END $$;
 
 -- 2. Update existing data to match new enterprise roles
 UPDATE public.profiles SET role = 'admin' WHERE role = 'manager';
